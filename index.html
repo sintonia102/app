@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SINTONIA - Radio Online Profesional</title>
+    <title>Sintonia App</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -1577,26 +1577,30 @@
             if (shareButton) { // Check if button exists
                 shareButton.addEventListener('click', async () => {
                     console.log('Button click: shareButton'); // Debugging
+                    // Updated shareData with desired text
                     const shareData = {
-                        title: document.title,
+                        title: document.title, // Use the updated page title
+                        text: 'Te invitamos a escuchar Sintonia 102.5, desde Monte Maíz, Cba. Argentina',
                         url: window.location.href
                     };
 
                     try {
                         // Use the Web Share API if available
                         if (navigator.share) {
+                            console.log('Using Web Share API with data:', shareData); // Debugging
                             await navigator.share(shareData);
                             console.log('Application shared successfully'); // Debugging
                             showToast('Aplicación compartida.');
                         } else {
-                            // Fallback: Copy URL to clipboard
+                            // Fallback: Copy URL and text to clipboard (behavior varies by browser)
                              if (navigator.clipboard && navigator.clipboard.writeText) { // Check if clipboard API is available
-                                await navigator.clipboard.writeText(shareData.url);
-                                console.log('URL copied to clipboard'); // Debugging
-                                showToast('URL copiada al portapapeles.');
+                                const textToCopy = `${shareData.text}\n${shareData.url}`; // Combine text and URL
+                                await navigator.clipboard.writeText(textToCopy);
+                                console.log('Combined text and URL copied to clipboard:', textToCopy); // Debugging
+                                showToast('Mensaje y URL copiados al portapapeles.');
                              } else {
-                                 console.warn('Clipboard API not available, could not copy URL.'); // Debugging
-                                 showToast('No se pudo copiar la URL. Copia la dirección de la barra de direcciones.', 'warning');
+                                 console.warn('Clipboard API not available, could not copy URL and text.'); // Debugging
+                                 showToast('No se pudo copiar el mensaje. Copia la dirección de la barra de direcciones.', 'warning');
                              }
                         }
                     } catch (err) {
@@ -1768,7 +1772,7 @@
               - Basic Weekly Scheduler (with toggle icon - BROWSER-BASED, LIMITED RELIABILITY)
               - Kick.com Embed Toggle (will likely be blocked by X-Frame-Options)
               - News Link Button (replaces Favorites placeholder)
-              - Share Application Button (uses Web Share API or copies URL)
+              - Share Application Button (uses Web Share API or copies URL with custom text)
               - Basic History (Last Station)
               - Theme Toggle (Dark/Light)
               - Toast Notifications
@@ -1794,6 +1798,7 @@
               Limitations due to Browser Security / External Site Configuration:
               - RSS Feed Reader: Likely blocked by CORS policy on the feed server. Cannot be fixed client-side.
               - Kick.com Embed: Likely blocked by X-Frame-Options policy on Kick.com. Cannot be fixed client-side.
+              - Sharing Image: Standard Web Share API does not support including an image from a URL directly.
 
               To Extend:
               - Add more stations to the <select> element.
