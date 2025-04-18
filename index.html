@@ -568,79 +568,6 @@
              box-shadow: 5px 5px 15px var(--shadow-light);
          }
 
-        /* RSS Reader Styles */
-        #rss-reader-container {
-            margin-top: 20px;
-            text-align: left; /* Align text left for readability */
-            padding-top: 15px;
-            border-top: 1px solid rgba(0, 123, 255, 0.3); /* Separator line */
-        }
-
-        #rss-title {
-            font-size: 1.3em;
-            color: var(--accent-blue);
-            margin-bottom: 10px;
-            text-align: center; /* Center the title */
-        }
-
-        #rss-items {
-            max-height: 200px; /* Limit height and add scroll */
-            overflow-y: auto;
-            padding-right: 10px; /* Space for scrollbar */
-        }
-
-        .rss-item {
-            background-color: rgba(0, 123, 255, 0.1); /* Subtle background */
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            border: 1px solid rgba(0, 123, 255, 0.2);
-            transition: background-color var(--transition-speed);
-        }
-
-        .rss-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .rss-item a {
-            color: var(--text-dark); /* Link color */
-            text-decoration: none; /* No underline */
-            font-weight: bold;
-            display: block; /* Make the whole block clickable */
-            margin-bottom: 5px;
-        }
-
-        .rss-item a:hover {
-            color: var(--hover-blue); /* Hover color */
-            text-decoration: underline; /* Underline on hover */
-        }
-
-        .rss-item .rss-date {
-            font-size: 0.8em;
-            color: rgba(255, 255, 255, 0.7); /* Lighter color for date */
-        }
-
-         body.light-theme #rss-title {
-             color: var(--hover-blue);
-         }
-
-         body.light-theme .rss-item {
-             background-color: rgba(0, 123, 255, 0.05);
-             border: 1px solid rgba(0, 123, 255, 0.1);
-         }
-
-         body.light-theme .rss-item a {
-             color: var(--text-light);
-         }
-
-         body.light-theme .rss-item a:hover {
-             color: var(--accent-blue);
-         }
-
-         body.light-theme .rss-item .rss-date {
-             color: rgba(51, 51, 51, 0.7);
-         }
-
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -707,21 +634,7 @@
              #sintonia-text {
                  font-size: 1.2em;
              }
-             #rss-reader-container {
-                 padding-top: 10px;
-             }
-             #rss-title {
-                 font-size: 1.2em;
-             }
-             .rss-item {
-                 padding: 8px;
-             }
-             .rss-item a {
-                 font-size: 0.9em;
-             }
-             .rss-item .rss-date {
-                 font-size: 0.7em;
-             }
+             /* Removed RSS specific media query styles */
         }
 
         /* Footer styles */
@@ -818,13 +731,6 @@
         </div>
 
 
-        <div id="rss-reader-container">
-            <h3 id="rss-title">Cargando noticias...</h3>
-            <div id="rss-items">
-                </div>
-        </div>
-
-
          <div class="kick-embed-container" id="kickEmbedContainer">
              <iframe src="https://player.kick.com/sintonia-tv" height="720" width="1280" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
         </div>
@@ -861,10 +767,7 @@
             const newsLinkButton = document.getElementById('newsLinkButton');
             const shareButton = document.getElementById('shareButton');
 
-            // RSS Reader elements
-            const rssReaderContainer = document.getElementById('rss-reader-container');
-            const rssTitle = document.getElementById('rss-title');
-            const rssItemsDiv = document.getElementById('rss-items');
+            // RSS Reader elements (removed)
 
             // Sleep timer elements
             const toggleSleepTimerButton = document.getElementById('toggleSleepTimerButton');
@@ -1002,106 +905,9 @@
             // Removed Metadata Display function (updateSonicTitle)
 
 
-            // --- RSS Feed Reader ---
-            const RSS_FEED_URL = 'https://www.sintonia102.com/feeds/posts/default?alt=rss';
-            // Using a public CORS proxy as a workaround for CORS restrictions.
-            // NOTE: Public proxies can be unreliable, have usage limits, or pose security/privacy risks.
-            // This is not a guaranteed long-term solution.
-            const CORS_PROXY_URL = 'https://corsproxy.io/?'; // Example public proxy
-
-            async function fetchAndDisplayRss(feedUrl) {
-                console.log('Fetching RSS from:', feedUrl); // Debugging
-                if (rssTitle) { // Check if element exists
-                     rssTitle.textContent = 'Cargando noticias...';
-                }
-                if (rssItemsDiv) { // Check if element exists
-                    rssItemsDiv.innerHTML = ''; // Clear previous items
-                } else {
-                     console.error('RSS items div not found'); // Debugging
-                     return; // Stop if container not found
-                }
-
-                // Construct the URL using the CORS proxy
-                const proxiedUrl = CORS_PROXY_URL + encodeURIComponent(feedUrl);
-                console.log('Fetching RSS via proxy:', proxiedUrl); // Debugging
-
-
-                try {
-                    const response = await fetch(proxiedUrl);
-                    console.log('Fetch response status via proxy:', response.status); // Debugging
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const text = await response.text();
-                    console.log('Fetch response text received via proxy'); // Debugging
-
-                    // Parse the XML (Atom format in this case)
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(text, 'text/xml');
-                    console.log('Parsed XML:', xmlDoc); // Debugging
-
-                    // Check for parsing errors
-                    const parserError = xmlDoc.getElementsByTagName('parsererror');
-                    if (parserError.length > 0) {
-                        console.error('XML Parsing Error:', parserError[0]); // Debugging
-                        throw new Error('Error parsing RSS/Atom feed.');
-                    }
-                    console.log('XML parsed successfully'); // Debugging
-
-
-                    // Get Feed Title
-                    const feedTitleElement = xmlDoc.querySelector('feed > title');
-                    if (feedTitleElement && rssTitle) { // Check if elements exist
-                        rssTitle.textContent = feedTitleElement.textContent;
-                         console.log('Feed Title:', rssTitle.textContent); // Debugging
-                    } else if (rssTitle) {
-                        rssTitle.textContent = 'Noticias'; // Default title if not found
-                         console.log('Feed Title not found, using default:', rssTitle.textContent); // Debugging
-                    }
-
-
-                    // Get and display Feed Items (Entries in Atom)
-                    const entries = xmlDoc.querySelectorAll('entry');
-                    console.log('Number of entries found:', entries.length); // Debugging
-
-                    if (entries.length > 0) {
-                        entries.forEach(entry => {
-                            const titleElement = entry.querySelector('title');
-                            const linkElement = entry.querySelector('link[rel="alternate"]');
-                            const publishedElement = entry.querySelector('published');
-                            // const summaryElement = entry.querySelector('summary'); // Optional: include summary
-
-                            const itemTitle = titleElement ? titleElement.textContent : 'Sin título';
-                            const itemLink = linkElement ? linkElement.getAttribute('href') : '#';
-                            const itemDate = publishedElement ? new Date(publishedElement.textContent).toLocaleDateString() : ''; // Format date
-
-                            const itemDiv = document.createElement('div');
-                            itemDiv.classList.add('rss-item');
-                            itemDiv.innerHTML = `
-                                <a href="${itemLink}" target="_blank" rel="noopener noreferrer">${itemTitle}</a>
-                                ${itemDate ? `<div class="rss-date">${itemDate}</div>` : ''}
-                                `;
-                             if (rssItemsDiv) { // Check if element exists before appending
-                                rssItemsDiv.appendChild(itemDiv);
-                             }
-                             console.log('Added RSS item:', itemTitle); // Debugging
-                        });
-                    } else if (rssItemsDiv) { // Check if element exists
-                        rssItemsDiv.innerHTML = '<div class="rss-item">No se encontraron noticias.</div>';
-                         console.log('No RSS entries found'); // Debugging
-                    }
-
-                } catch (error) {
-                    console.error('Error fetching or parsing RSS feed via proxy:', error); // Debugging
-                    if (rssTitle) { // Check if element exists
-                        rssTitle.textContent = 'Error al cargar noticias';
-                    }
-                     if (rssItemsDiv) { // Check if element exists
-                        rssItemsDiv.innerHTML = '<div class="rss-item">No se pudieron cargar las noticias. Esto podría deberse a un problema con el feed o a restricciones de CORS. Revisa la consola para más detalles.</div>';
-                     }
-                    showToast('Error al cargar noticias.', 'error');
-                }
-            }
+            // --- RSS Feed Reader (Removed) ---
+            // Removed variables: RSS_FEED_URL, CORS_PROXY_URL
+            // Removed function: fetchAndDisplayRss
 
 
             // --- Play/Pause Control ---
@@ -1795,7 +1601,8 @@
             // --- Initial Setup ---
             initAudio(); // Initialize audio with the default selected station
             loadSchedule(); // Load saved schedule on startup
-            fetchAndDisplayRss(RSS_FEED_URL); // Load RSS feed on startup
+            // Removed call to fetchAndDisplayRss
+
 
              // Basic documentation comment:
              /*
@@ -1818,7 +1625,6 @@
               - Toast Notifications
               - Keyboard Shortcuts (Space, Arrow Up/Down)
               - Accessibility (ARIA attributes, CSS contrast)
-              - Basic RSS Feed Reader (will likely be blocked by CORS - Attempting with Proxy)
               - Footer with Copyright
 
               Features Not Fully Implemented (Require more complex logic/backend):
@@ -1832,10 +1638,9 @@
               - Multiple Visualizer Modes (only basic bar implemented)
               - Full-screen Visualizer Mode
               - Robust Error Handling for all scenarios
-              - Periodic RSS Feed Refresh
 
               Limitations due to Browser Security / External Site Configuration:
-              - RSS Feed Reader: Likely blocked by CORS policy on the feed server. Attempting workaround with a public proxy. Success depends on the proxy and the target server's configuration.
+              - RSS Feed Reader: Removed due to persistent CORS issues.
               - Kick.com Embed: Likely blocked by X-Frame-Options policy on Kick.com. Cannot be fixed client-side.
               - Sharing Image: Standard Web Share API does not support including an image from a URL directly.
 
@@ -1847,7 +1652,6 @@
               - If the station provides a metadata source (like a JSON API), you could add logic to fetch and display it in the 'sonic_title' div.
               - Add subtle sound effects by playing short audio files.
               - Implement full-screen mode using the Fullscreen API.
-              - Add automatic periodic refresh for the RSS feed (e.g., using setInterval).
              */
 
         }); // End of DOMContentLoaded
