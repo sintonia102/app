@@ -1422,7 +1422,7 @@
                                  } else {
                                       // If contentWindow is null, it's likely blocked or not ready.
                                       showToast('La transmisión en vivo podría estar bloqueada por el sitio de origen.', 'warning');
-                                      showToast('Considera abrirla en una nueva pestaña si no carga.', 'info', 4000);
+                                      showToast('Considera abrirla en una nueva pestaña si no carga.', 'info', 44000); // Increased duration
                                  }
                              } catch (e) {
                                   // Catch any potential cross-origin errors during the check
@@ -1511,8 +1511,14 @@
 
             // --- Theme Toggle ---
             if (themeToggle) { // Check if button exists
-                themeToggle.addEventListener('click', () => {
-                    console.log('Button click: themeToggle'); // Debugging
+                // Function to handle theme toggle logic
+                const handleThemeToggle = (event) => {
+                     // Prevent default touch behavior that might interfere with click
+                     if (event.type === 'touchend') {
+                         event.preventDefault();
+                     }
+
+                    console.log('Theme toggle activated by:', event.type); // Debugging: Log event type
                     document.body.classList.toggle('light-theme');
                     console.log('Body classList after toggle:', document.body.classList); // Debugging: Check class list
                     const isLightTheme = document.body.classList.contains('light-theme');
@@ -1531,9 +1537,14 @@
                      } else {
                          console.error('Theme toggle icon not found'); // Debugging
                      }
-                });
+                };
 
-                // Load saved theme
+                // Add both click and touchend listeners
+                themeToggle.addEventListener('click', handleThemeToggle);
+                themeToggle.addEventListener('touchend', handleThemeToggle); // Added touchend listener
+
+
+                // Load saved theme on initial load
                 const savedTheme = localStorage.getItem('sintonia_theme');
                 if (savedTheme === 'light') {
                      document.body.classList.add('light-theme');
@@ -1692,7 +1703,7 @@
               - News Link Button (replaces Favorites placeholder)
               - Share Application Button (uses Web Share API or copies URL with custom text)
               - Basic History (Last Station)
-              - Theme Toggle (Dark/Light)
+              - Theme Toggle (Dark/Light) - Now includes touchend listener
               - Toast Notifications
               - Keyboard Shortcuts (Space, Arrow Up/Down)
               - Accessibility (ARIA attributes, CSS contrast)
