@@ -1063,7 +1063,7 @@
                             const publishedElement = entry.querySelector('published');
                             // const summaryElement = entry.querySelector('summary'); // Optional: include summary
 
-                            const itemTitle = titleElement ? titleTitle.textContent : 'Sin título';
+                            const itemTitle = titleElement ? titleElement.textContent : 'Sin título';
                             const itemLink = linkElement ? linkElement.getAttribute('href') : '#';
                             const itemDate = publishedElement ? new Date(publishedElement.textContent).toLocaleDateString() : ''; // Format date
 
