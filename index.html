@@ -1004,6 +1004,10 @@
 
             // --- RSS Feed Reader ---
             const RSS_FEED_URL = 'https://www.sintonia102.com/feeds/posts/default?alt=rss';
+            // Using a public CORS proxy as a workaround for CORS restrictions.
+            // NOTE: Public proxies can be unreliable, have usage limits, or pose security/privacy risks.
+            // This is not a guaranteed long-term solution.
+            const CORS_PROXY_URL = 'https://corsproxy.io/?'; // Example public proxy
 
             async function fetchAndDisplayRss(feedUrl) {
                 console.log('Fetching RSS from:', feedUrl); // Debugging
@@ -1017,15 +1021,19 @@
                      return; // Stop if container not found
                 }
 
+                // Construct the URL using the CORS proxy
+                const proxiedUrl = CORS_PROXY_URL + encodeURIComponent(feedUrl);
+                console.log('Fetching RSS via proxy:', proxiedUrl); // Debugging
+
 
                 try {
-                    const response = await fetch(feedUrl);
-                    console.log('Fetch response status:', response.status); // Debugging
+                    const response = await fetch(proxiedUrl);
+                    console.log('Fetch response status via proxy:', response.status); // Debugging
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const text = await response.text();
-                    console.log('Fetch response text received'); // Debugging
+                    console.log('Fetch response text received via proxy'); // Debugging
 
                     // Parse the XML (Atom format in this case)
                     const parser = new DOMParser();
@@ -1084,7 +1092,7 @@
                     }
 
                 } catch (error) {
-                    console.error('Error fetching or parsing RSS feed:', error); // Debugging
+                    console.error('Error fetching or parsing RSS feed via proxy:', error); // Debugging
                     if (rssTitle) { // Check if element exists
                         rssTitle.textContent = 'Error al cargar noticias';
                     }
@@ -1810,7 +1818,7 @@
               - Toast Notifications
               - Keyboard Shortcuts (Space, Arrow Up/Down)
               - Accessibility (ARIA attributes, CSS contrast)
-              - Basic RSS Feed Reader (will likely be blocked by CORS)
+              - Basic RSS Feed Reader (will likely be blocked by CORS - Attempting with Proxy)
               - Footer with Copyright
 
               Features Not Fully Implemented (Require more complex logic/backend):
@@ -1827,7 +1835,7 @@
               - Periodic RSS Feed Refresh
 
               Limitations due to Browser Security / External Site Configuration:
-              - RSS Feed Reader: Likely blocked by CORS policy on the feed server. Cannot be fixed client-side.
+              - RSS Feed Reader: Likely blocked by CORS policy on the feed server. Attempting workaround with a public proxy. Success depends on the proxy and the target server's configuration.
               - Kick.com Embed: Likely blocked by X-Frame-Options policy on Kick.com. Cannot be fixed client-side.
               - Sharing Image: Standard Web Share API does not support including an image from a URL directly.
 
