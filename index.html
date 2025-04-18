@@ -741,6 +741,34 @@
                 </select>
         </div>
 
+        <div id="sleepTimerControls">
+            <label for="sleepTimerMinutes">Apagado en (minutos):</label>
+            <input type="number" id="sleepTimerMinutes" min="1" value="30" aria-label="Configurar temporizador de apagado">
+            <button id="setSleepTimerButton" aria-label="Configurar temporizador"><i class="fas fa-clock"></i></button>
+            <button id="cancelSleepTimerButton" style="display: none;" aria-label="Cancelar temporizador"><i class="fas fa-times"></i></button>
+        </div>
+
+         <div id="weeklySchedulerControls">
+            <h3>Programar Encendido</h3>
+            <div class="day-select">
+                <label><input type="checkbox" name="schedule-day" value="1"> Lunes</label>
+                <label><input type="checkbox" name="schedule-day" value="2"> Martes</label>
+                <label><input type="checkbox" name="schedule-day" value="3"> Miércoles</label>
+                <label><input type="checkbox" name="schedule-day" value="4"> Jueves</label>
+                <label><input type="checkbox" name="schedule-day" value="5"> Viernes</label>
+                <label><input type="checkbox" name="schedule-day" value="6"> Sábado</label>
+                <label><input type="checkbox" name="schedule-day" value="0"> Domingo</label>
+            </div>
+            <div class="time-select">
+                <label for="scheduleTime">Hora:</label>
+                <input type="time" id="scheduleTime" value="07:00">
+            </div>
+            <button id="saveScheduleButton">Guardar Programación</button>
+            <button id="clearScheduleButton">Limpiar Programación</button>
+             <p style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7); margin-top: 10px;">Nota: La programación solo funciona si la página está abierta en el navegador.</p>
+        </div>
+
+
         <div id="rss-reader-container">
             <h3 id="rss-title">Cargando noticias...</h3>
             <div id="rss-items">
@@ -762,1004 +790,1023 @@
     <script>
         console.log('Script started'); // Debugging: Script start marker
 
-        const playPauseButton = document.getElementById('playPauseButton');
-        const playPauseIcon = playPauseButton ? playPauseButton.querySelector('i') : null; // Check if button exists
-        const volumeSlider = document.getElementById('volumeSlider');
-        const volumeIcon = document.getElementById('volumeIcon');
-        const stationsSelect = document.getElementById('stations');
-        const visualizerCanvas = document.getElementById('visualizerCanvas');
-        const rdsInfo = document.getElementById('rds-info');
-        const sleepTimerMinutesInput = document.getElementById('sleepTimerMinutes');
-        const setSleepTimerButton = document.getElementById('setSleepTimerButton');
-        const cancelSleepTimerButton = document.getElementById('cancelSleepTimerButton');
-        const themeToggle = document.getElementById('themeToggle');
-        const kickEmbedContainer = document.getElementById('kickEmbedContainer');
-        const toggleKickButton = document.getElementById('toggleKickButton');
-        const toastContainer = document.getElementById('toastContainer');
-        const newsLinkButton = document.getElementById('newsLinkButton');
-        const shareButton = document.getElementById('shareButton');
+        // Wait for the DOM to be fully loaded before accessing elements
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM fully loaded and parsed'); // Debugging: DOM ready marker
 
-        // RSS Reader elements
-        const rssReaderContainer = document.getElementById('rss-reader-container');
-        const rssTitle = document.getElementById('rss-title');
-        const rssItemsDiv = document.getElementById('rss-items');
+            // --- Get Element References ---
+            const playPauseButton = document.getElementById('playPauseButton');
+            const playPauseIcon = playPauseButton ? playPauseButton.querySelector('i') : null; // Check if button exists
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeIcon = document.getElementById('volumeIcon');
+            const stationsSelect = document.getElementById('stations');
+            const visualizerCanvas = document.getElementById('visualizerCanvas');
+            const rdsInfo = document.getElementById('rds-info');
+            const sleepTimerMinutesInput = document.getElementById('sleepTimerMinutes');
+            const setSleepTimerButton = document.getElementById('setSleepTimerButton');
+            const cancelSleepTimerButton = document.getElementById('cancelSleepTimerButton');
+            const themeToggle = document.getElementById('themeToggle');
+            const kickEmbedContainer = document.getElementById('kickEmbedContainer');
+            const toggleKickButton = document.getElementById('toggleKickButton');
+            const toastContainer = document.getElementById('toastContainer');
+            const newsLinkButton = document.getElementById('newsLinkButton');
+            const shareButton = document.getElementById('shareButton');
 
+            // RSS Reader elements
+            const rssReaderContainer = document.getElementById('rss-reader-container');
+            const rssTitle = document.getElementById('rss-title');
+            const rssItemsDiv = document.getElementById('rss-items');
 
-        // Sleep timer elements
-        const toggleSleepTimerButton = document.getElementById('toggleSleepTimerButton');
-        const sleepTimerControls = document.getElementById('sleepTimerControls');
+            // Sleep timer elements
+            const toggleSleepTimerButton = document.getElementById('toggleSleepTimerButton');
+            const sleepTimerControls = document.getElementById('sleepTimerControls');
 
-        // Weekly scheduler elements
-        const toggleWeeklySchedulerButton = document.getElementById('toggleWeeklySchedulerButton');
-        const weeklySchedulerControls = document.getElementById('weeklySchedulerControls');
-        const scheduleDayCheckboxes = document.querySelectorAll('#weeklySchedulerControls input[name="schedule-day"]');
-        const scheduleTimeInput = document.getElementById('scheduleTime');
-        const saveScheduleButton = document.getElementById('saveScheduleButton');
-        const clearScheduleButton = document.getElementById('clearScheduleButton');
+            // Weekly scheduler elements
+            const toggleWeeklySchedulerButton = document.getElementById('toggleWeeklySchedulerButton');
+            const weeklySchedulerControls = document.getElementById('weeklySchedulerControls');
+            const scheduleDayCheckboxes = document.querySelectorAll('#weeklySchedulerControls input[name="schedule-day"]');
+            const scheduleTimeInput = document.getElementById('scheduleTime');
+            const saveScheduleButton = document.getElementById('saveScheduleButton');
+            const clearScheduleButton = document.getElementById('clearScheduleButton');
 
-        // Metadata div (placeholder)
-        const sonicTitleDiv = document.getElementById('sonic_title');
+            // Metadata div (placeholder)
+            const sonicTitleDiv = document.getElementById('sonic_title');
 
-
-        let audioContext;
-        let audioSource;
-        let analyser;
-        let gainNode;
-        let audio; // Use a standard Audio object for simplicity with streams
-        let isPlaying = false;
-        let animationFrameId;
-        let sleepTimerTimeout;
-        let isKickEmbedVisible = false;
-        let isSleepTimerVisible = false; // New state variable
-        let isWeeklySchedulerVisible = false; // New state variable
-        let weeklySchedule = []; // Array to store schedule objects { day: number, time: string }
-        let scheduleCheckInterval;
-
-
-        // --- Audio Setup ---
-        function initAudio() {
-            console.log('initAudio called'); // Debugging
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioContext.createAnalyser();
-                gainNode = audioContext.createGain();
-
-                analyser.fftSize = 2048; // Increased size for more detail
-                const bufferLength = analyser.frequencyBinCount;
-                dataArray = new Uint8Array(bufferLength);
-
-                // Connect nodes: source -> analyser -> gain -> destination
-                // The standard Audio object needs to be connected differently
+            // Check if essential elements are found
+            if (!playPauseButton || !volumeSlider || !stationsSelect || !visualizerCanvas || !rdsInfo || !toastContainer) {
+                console.error('Essential elements not found. Player may not function correctly.');
+                // Optionally display a user-friendly error message on the page
+                if (rdsInfo) rdsInfo.textContent = 'Error: Elementos esenciales del reproductor no encontrados.';
+                 showToast('Error al iniciar el reproductor. Elementos no encontrados.', 'error');
+                 return; // Stop script execution if essential elements are missing
             }
 
-            // Create a new Audio object for each stream change
-            if (audio) {
-                audio.pause();
-                audio = null;
-            }
-            audio = new Audio(stationsSelect.value);
-            audio.crossOrigin = 'anonymous'; // Required for CORS and visualization
-
-            // Connect the HTMLMediaElement to the AudioContext
-            audioSource = audioContext.createMediaElementSource(audio);
-            audioSource.connect(analyser);
-            analyser.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            // Set initial volume
-            gainNode.gain.value = volumeSlider.value;
-
-            // Event listeners for audio state
-            audio.onplay = () => {
-                console.log('Audio onplay event'); // Debugging
-                isPlaying = true;
-                if (playPauseIcon) { // Check if icon element exists
-                    playPauseIcon.classList.remove('fa-play');
-                    playPauseIcon.classList.add('fa-pause');
-                }
-                rdsInfo.textContent = 'Reproduciendo...'; // Basic feedback
-                showToast('Reproduciendo...');
-                requestAnimationFrame(drawVisualizer); // Start visualization
-                updateSonicTitle(''); // Clear metadata placeholder on play
-            };
-
-            audio.onpause = () => {
-                console.log('Audio onpause event'); // Debugging
-                isPlaying = false;
-                 if (playPauseIcon) { // Check if icon element exists
-                    playPauseIcon.classList.remove('fa-pause');
-                    playPauseIcon.classList.add('fa-play');
-                 }
-                rdsInfo.textContent = 'Pausado'; // Basic feedback
-                showToast('Pausado');
-                 cancelAnimationFrame(animationFrameId); // Stop visualization
-                 updateSonicTitle(''); // Clear metadata when paused
-            };
-
-            audio.onerror = (e) => {
-                console.error('Audio error:', e); // Debugging
-                rdsInfo.textContent = 'Error al cargar la estación';
-                showToast('Error de reproducción', 'error');
-                isPlaying = false;
-                 if (playPauseIcon) { // Check if icon element exists
-                    playPauseIcon.classList.remove('fa-pause');
-                    playPauseIcon.classList.add('fa-play');
-                 }
-                 cancelAnimationFrame(animationFrameId); // Stop visualization
-                 updateSonicTitle('Error de reproducción'); // Indicate error in sonic_title
-            };
-
-            audio.onwaiting = () => {
-                 console.log('Audio onwaiting event'); // Debugging
-                 rdsInfo.textContent = 'Cargando...';
-                 showToast('Cargando...');
-                 updateSonicTitle('Cargando...'); // Indicate loading in sonic_title
-            };
-
-             audio.onstalled = () => {
-                 console.log('Audio onstalled event'); // Debugging
-                 rdsInfo.textContent = 'Buffer vacío...';
-                 showToast('Buffer vacío...');
-                 updateSonicTitle('Buffer vacío'); // Indicate buffer empty in sonic_title
-             };
-
-             audio.onplaying = () => {
-                 console.log('Audio onplaying event'); // Debugging
-                 // rdsInfo.textContent = 'Reproduciendo'; // Keep more detailed feedback from onplay/metadata
-             };
-        }
-
-        // --- Metadata Display (Placeholder) ---
-        function updateSonicTitle(text) {
-            if (sonicTitleDiv) { // Check if element exists
-                sonicTitleDiv.textContent = text;
-            }
-        }
-
-        // ** IMPORTANT NOTE ON METADATA (RDS / Song Title): **
-        // Reading true RDS metadata directly from a web audio stream using client-side JavaScript
-        // is generally NOT possible. RDS is a broadcast standard, not a web streaming standard.
-        // Web streams (like MP3 or AAC streams) might embed metadata in different ways,
-        // often through Icecast/Shoutcast headers or separate APIs.
-
-        // The `sonic_title` div is ready to display metadata, but the function to *get*
-        // that metadata (`fetchAndDisplayMetadata` - hypothetical name) needs to be implemented
-        // based on a reliable source provided by the radio station.
+            // Initialize variables after elements are confirmed to exist
+            let audioContext;
+            let audioSource;
+            let analyser;
+            let gainNode;
+            let audio; // Use a standard Audio object for simplicity with streams
+            let isPlaying = false;
+            let animationFrameId;
+            let sleepTimerTimeout;
+            let isKickEmbedVisible = false;
+            let isSleepTimerVisible = false; // New state variable
+            let isWeeklySchedulerVisible = false; // New state variable
+            let weeklySchedule = []; // Array to store schedule objects { day: number, time: string }
+            let scheduleCheckInterval;
 
 
-        // --- RSS Feed Reader ---
-        const RSS_FEED_URL = 'https://www.sintonia102.com/feeds/posts/default?alt=rss';
+            // --- Audio Setup ---
+            function initAudio() {
+                console.log('initAudio called'); // Debugging
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    gainNode = audioContext.createGain();
 
-        async function fetchAndDisplayRss(feedUrl) {
-            console.log('Fetching RSS from:', feedUrl); // Debugging
-            if (rssTitle) { // Check if element exists
-                 rssTitle.textContent = 'Cargando noticias...';
-            }
-            if (rssItemsDiv) { // Check if element exists
-                rssItemsDiv.innerHTML = ''; // Clear previous items
-            } else {
-                 console.error('RSS items div not found'); // Debugging
-                 return; // Stop if container not found
-            }
+                    analyser.fftSize = 2048; // Increased size for more detail
+                    const bufferLength = analyser.frequencyBinCount;
+                    dataArray = new Uint8Array(bufferLength);
 
-
-            try {
-                const response = await fetch(feedUrl);
-                console.log('Fetch response status:', response.status); // Debugging
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const text = await response.text();
-                console.log('Fetch response text received'); // Debugging
-
-                // Parse the XML (Atom format in this case)
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(text, 'text/xml');
-                console.log('Parsed XML:', xmlDoc); // Debugging
-
-                // Check for parsing errors
-                const parserError = xmlDoc.getElementsByTagName('parsererror');
-                if (parserError.length > 0) {
-                    console.error('XML Parsing Error:', parserError[0]); // Debugging
-                    throw new Error('Error parsing RSS/Atom feed.');
-                }
-                console.log('XML parsed successfully'); // Debugging
-
-
-                // Get Feed Title
-                const feedTitleElement = xmlDoc.querySelector('feed > title');
-                if (feedTitleElement && rssTitle) { // Check if elements exist
-                    rssTitle.textContent = feedTitleElement.textContent;
-                     console.log('Feed Title:', rssTitle.textContent); // Debugging
-                } else if (rssTitle) {
-                    rssTitle.textContent = 'Noticias'; // Default title if not found
-                     console.log('Feed Title not found, using default:', rssTitle.textContent); // Debugging
+                    // Connect nodes: source -> analyser -> gain -> destination
+                    // The standard Audio object needs to be connected differently
                 }
 
-
-                // Get and display Feed Items (Entries in Atom)
-                const entries = xmlDoc.querySelectorAll('entry');
-                console.log('Number of entries found:', entries.length); // Debugging
-
-                if (entries.length > 0) {
-                    entries.forEach(entry => {
-                        const titleElement = entry.querySelector('title');
-                        const linkElement = entry.querySelector('link[rel="alternate"]');
-                        const publishedElement = entry.querySelector('published');
-                        // const summaryElement = entry.querySelector('summary'); // Optional: include summary
-
-                        const itemTitle = titleElement ? titleElement.textContent : 'Sin título';
-                        const itemLink = linkElement ? linkElement.getAttribute('href') : '#';
-                        const itemDate = publishedElement ? new Date(publishedElement.textContent).toLocaleDateString() : ''; // Format date
-
-                        const itemDiv = document.createElement('div');
-                        itemDiv.classList.add('rss-item');
-                        itemDiv.innerHTML = `
-                            <a href="${itemLink}" target="_blank" rel="noopener noreferrer">${itemTitle}</a>
-                            ${itemDate ? `<div class="rss-date">${itemDate}</div>` : ''}
-                            `;
-                         if (rssItemsDiv) { // Check if element exists before appending
-                            rssItemsDiv.appendChild(itemDiv);
-                         }
-                         console.log('Added RSS item:', itemTitle); // Debugging
-                    });
-                } else if (rssItemsDiv) { // Check if element exists
-                    rssItemsDiv.innerHTML = '<div class="rss-item">No se encontraron noticias.</div>';
-                     console.log('No RSS entries found'); // Debugging
-                }
-
-            } catch (error) {
-                console.error('Error fetching or parsing RSS feed:', error); // Debugging
-                if (rssTitle) { // Check if element exists
-                    rssTitle.textContent = 'Error al cargar noticias';
-                }
-                 if (rssItemsDiv) { // Check if element exists
-                    rssItemsDiv.innerHTML = '<div class="rss-item">No se pudieron cargar las noticias. Esto podría deberse a un problema con el feed o a restricciones de CORS. Revisa la consola para más detalles.</div>';
-                 }
-                showToast('Error al cargar noticias.', 'error');
-            }
-        }
-
-
-        // --- Play/Pause Control ---
-        if (playPauseButton) { // Check if button exists
-            playPauseButton.addEventListener('click', () => {
-                console.log('Button click: playPauseButton'); // Debugging
-                if (!audio) {
-                    initAudio();
-                }
-
-                if (audioContext.state === 'suspended') {
-                     audioContext.resume(); // Resume context on user interaction
-                }
-
-                if (isPlaying) {
+                // Create a new Audio object for each stream change
+                if (audio) {
                     audio.pause();
-                } else {
-                    audio.play().catch(e => {
-                        console.error("Playback failed:", e);
-                        showToast('No se pudo iniciar la reproducción', 'error');
-                         rdsInfo.textContent = 'Error de reproducción';
-                         updateSonicTitle('Error de reproducción');
-                    });
+                    audio = null;
                 }
-            });
-        } else {
-            console.error('Play/Pause button not found'); // Debugging
-        }
+                audio = new Audio(stationsSelect.value);
+                audio.crossOrigin = 'anonymous'; // Required for CORS and visualization
 
+                // Connect the HTMLMediaElement to the AudioContext
+                audioSource = audioContext.createMediaElementSource(audio);
+                audioSource.connect(analyser);
+                analyser.connect(gainNode);
+                gainNode.connect(audioContext.destination);
 
-        // --- Volume Control ---
-        if (volumeSlider) { // Check if element exists
-            volumeSlider.addEventListener('input', () => {
-                console.log('Volume slider input:', volumeSlider.value); // Debugging
-                if (gainNode) {
-                    gainNode.gain.value = volumeSlider.value;
-                    updateVolumeIcon(volumeSlider.value);
-                }
-                 // Save volume preference (basic)
-                 localStorage.setItem('sintonia_volume', volumeSlider.value);
-            });
+                // Set initial volume
+                gainNode.gain.value = volumeSlider.value;
 
-             // Load saved volume
-             const savedVolume = localStorage.getItem('sintonia_volume');
-             if (savedVolume !== null) {
-                 volumeSlider.value = savedVolume;
-                 if (gainNode) {
-                     gainNode.gain.value = savedVolume;
-                 }
-             }
-        } else {
-             console.error('Volume slider not found'); // Debugging
-        }
-
-        if (volumeIcon) { // Check if element exists
-             volumeIcon.addEventListener('click', () => {
-                console.log('Button click: volumeIcon (Mute/Unmute)'); // Debugging
-                if (gainNode) {
-                    if (gainNode.gain.value > 0) {
-                        gainNode.gain.value = 0; // Mute
-                        if (volumeSlider) volumeSlider.value = 0; // Update slider
-                        updateVolumeIcon(0);
-                        showToast('Silenciado');
-                    } else {
-                        // Restore previous volume or default
-                        const previousVolume = localStorage.getItem('sintonia_volume') || 1;
-                        gainNode.gain.value = previousVolume;
-                         if (volumeSlider) volumeSlider.value = previousVolume; // Update slider
-                        updateVolumeIcon(previousVolume);
-                        showToast('Sonido activado');
+                // Event listeners for audio state
+                audio.onplay = () => {
+                    console.log('Audio onplay event'); // Debugging
+                    isPlaying = true;
+                    if (playPauseIcon) { // Check if icon element exists
+                        playPauseIcon.classList.remove('fa-play');
+                        playPauseIcon.classList.add('fa-pause');
                     }
-                     if (volumeSlider) localStorage.setItem('sintonia_volume', volumeSlider.value); // Save mute state (as volume 0)
+                    rdsInfo.textContent = 'Reproduciendo...'; // Basic feedback
+                    showToast('Reproduciendo...');
+                    requestAnimationFrame(drawVisualizer); // Start visualization
+                    updateSonicTitle(''); // Clear metadata placeholder on play
+                };
+
+                audio.onpause = () => {
+                    console.log('Audio onpause event'); // Debugging
+                    isPlaying = false;
+                     if (playPauseIcon) { // Check if icon element exists
+                        playPauseIcon.classList.remove('fa-pause');
+                        playPauseIcon.classList.add('fa-play');
+                     }
+                    rdsInfo.textContent = 'Pausado'; // Basic feedback
+                    showToast('Pausado');
+                     cancelAnimationFrame(animationFrameId); // Stop visualization
+                     updateSonicTitle(''); // Clear metadata when paused
+                };
+
+                audio.onerror = (e) => {
+                    console.error('Audio error:', e); // Debugging
+                    rdsInfo.textContent = 'Error al cargar la estación';
+                    showToast('Error de reproducción', 'error');
+                    isPlaying = false;
+                     if (playPauseIcon) { // Check if icon element exists
+                        playPauseIcon.classList.remove('fa-pause');
+                        playPauseIcon.classList.add('fa-play');
+                     }
+                     cancelAnimationFrame(animationFrameId); // Stop visualization
+                     updateSonicTitle('Error de reproducción'); // Indicate error in sonic_title
+                };
+
+                audio.onwaiting = () => {
+                     console.log('Audio onwaiting event'); // Debugging
+                     rdsInfo.textContent = 'Cargando...';
+                     showToast('Cargando...');
+                     updateSonicTitle('Cargando...'); // Indicate loading in sonic_title
+                };
+
+                 audio.onstalled = () => {
+                     console.log('Audio onstalled event'); // Debugging
+                     rdsInfo.textContent = 'Buffer vacío...';
+                     showToast('Buffer vacío...');
+                     updateSonicTitle('Buffer vacío'); // Indicate buffer empty in sonic_title
+                 };
+
+                 audio.onplaying = () => {
+                     console.log('Audio onplaying event'); // Debugging
+                     // rdsInfo.textContent = 'Reproduciendo'; // Keep more detailed feedback from onplay/metadata
+                 };
+            }
+
+            // --- Metadata Display (Placeholder) ---
+            function updateSonicTitle(text) {
+                if (sonicTitleDiv) { // Check if element exists
+                    sonicTitleDiv.textContent = text;
                 }
-            });
-            // Initial icon update based on loaded volume
-            updateVolumeIcon(volumeSlider ? volumeSlider.value : 1); // Use 1 if slider not found
-        } else {
-            console.error('Volume icon not found'); // Debugging
-        }
+            }
+
+            // ** IMPORTANT NOTE ON METADATA (RDS / Song Title): **
+            // Reading true RDS metadata directly from a web audio stream using client-side JavaScript
+            // is generally NOT possible. RDS is a broadcast standard, not a web streaming standard.
+            // Web streams (like MP3 or AAC streams) might embed metadata in different ways,
+            // often through Icecast/Shoutcast headers or separate APIs.
+
+            // The `sonic_title` div is ready to display metadata, but the function to *get*
+            // that metadata (`fetchAndDisplayMetadata` - hypothetical name) needs to be implemented
+            // based on a reliable source provided by the radio station.
 
 
-        // --- Station Selection ---
-        if (stationsSelect) { // Check if element exists
-            stationsSelect.addEventListener('change', () => {
-                console.log('Station select change:', stationsSelect.value); // Debugging
-                initAudio(); // Initialize with the new stream URL
-                if (isPlaying) {
-                    audio.play().catch(e => {
-                        console.error("Playback failed:", e);
-                        showToast('No se pudo cambiar de estación', 'error');
-                         rdsInfo.textContent = 'Error al cambiar de estación';
-                         updateSonicTitle('Error al cambiar de estación');
-                    });
+            // --- RSS Feed Reader ---
+            const RSS_FEED_URL = 'https://www.sintonia102.com/feeds/posts/default?alt=rss';
+
+            async function fetchAndDisplayRss(feedUrl) {
+                console.log('Fetching RSS from:', feedUrl); // Debugging
+                if (rssTitle) { // Check if element exists
+                     rssTitle.textContent = 'Cargando noticias...';
+                }
+                if (rssItemsDiv) { // Check if element exists
+                    rssItemsDiv.innerHTML = ''; // Clear previous items
                 } else {
-                     rdsInfo.textContent = 'Estación seleccionada: ' + stationsSelect.options[stationsSelect.selectedIndex].text;
-                     showToast('Estación seleccionada');
+                     console.error('RSS items div not found'); // Debugging
+                     return; // Stop if container not found
                 }
-                 // Save last played station (basic history)
-                 localStorage.setItem('sintonia_last_station', stationsSelect.value);
-                 updateSonicTitle(''); // Clear metadata placeholder on station change
-            });
-
-             // Load last played station
-             const lastStation = localStorage.getItem('sintonia_last_station');
-             if (lastStation) {
-                 stationsSelect.value = lastStation;
-             }
-        } else {
-             console.error('Stations select not found'); // Debugging
-        }
 
 
-        function updateVolumeIcon(volume) {
+                try {
+                    const response = await fetch(feedUrl);
+                    console.log('Fetch response status:', response.status); // Debugging
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const text = await response.text();
+                    console.log('Fetch response text received'); // Debugging
+
+                    // Parse the XML (Atom format in this case)
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(text, 'text/xml');
+                    console.log('Parsed XML:', xmlDoc); // Debugging
+
+                    // Check for parsing errors
+                    const parserError = xmlDoc.getElementsByTagName('parsererror');
+                    if (parserError.length > 0) {
+                        console.error('XML Parsing Error:', parserError[0]); // Debugging
+                        throw new Error('Error parsing RSS/Atom feed.');
+                    }
+                    console.log('XML parsed successfully'); // Debugging
+
+
+                    // Get Feed Title
+                    const feedTitleElement = xmlDoc.querySelector('feed > title');
+                    if (feedTitleElement && rssTitle) { // Check if elements exist
+                        rssTitle.textContent = feedTitleElement.textContent;
+                         console.log('Feed Title:', rssTitle.textContent); // Debugging
+                    } else if (rssTitle) {
+                        rssTitle.textContent = 'Noticias'; // Default title if not found
+                         console.log('Feed Title not found, using default:', rssTitle.textContent); // Debugging
+                    }
+
+
+                    // Get and display Feed Items (Entries in Atom)
+                    const entries = xmlDoc.querySelectorAll('entry');
+                    console.log('Number of entries found:', entries.length); // Debugging
+
+                    if (entries.length > 0) {
+                        entries.forEach(entry => {
+                            const titleElement = entry.querySelector('title');
+                            const linkElement = entry.querySelector('link[rel="alternate"]');
+                            const publishedElement = entry.querySelector('published');
+                            // const summaryElement = entry.querySelector('summary'); // Optional: include summary
+
+                            const itemTitle = titleElement ? titleElement.textContent : 'Sin título';
+                            const itemLink = linkElement ? linkElement.getAttribute('href') : '#';
+                            const itemDate = publishedElement ? new Date(publishedElement.textContent).toLocaleDateString() : ''; // Format date
+
+                            const itemDiv = document.createElement('div');
+                            itemDiv.classList.add('rss-item');
+                            itemDiv.innerHTML = `
+                                <a href="${itemLink}" target="_blank" rel="noopener noreferrer">${itemTitle}</a>
+                                ${itemDate ? `<div class="rss-date">${itemDate}</div>` : ''}
+                                `;
+                             if (rssItemsDiv) { // Check if element exists before appending
+                                rssItemsDiv.appendChild(itemDiv);
+                             }
+                             console.log('Added RSS item:', itemTitle); // Debugging
+                        });
+                    } else if (rssItemsDiv) { // Check if element exists
+                        rssItemsDiv.innerHTML = '<div class="rss-item">No se encontraron noticias.</div>';
+                         console.log('No RSS entries found'); // Debugging
+                    }
+
+                } catch (error) {
+                    console.error('Error fetching or parsing RSS feed:', error); // Debugging
+                    if (rssTitle) { // Check if element exists
+                        rssTitle.textContent = 'Error al cargar noticias';
+                    }
+                     if (rssItemsDiv) { // Check if element exists
+                        rssItemsDiv.innerHTML = '<div class="rss-item">No se pudieron cargar las noticias. Esto podría deberse a un problema con el feed o a restricciones de CORS. Revisa la consola para más detalles.</div>';
+                     }
+                    showToast('Error al cargar noticias.', 'error');
+                }
+            }
+
+
+            // --- Play/Pause Control ---
+            if (playPauseButton) { // Check if button exists
+                playPauseButton.addEventListener('click', () => {
+                    console.log('Button click: playPauseButton'); // Debugging
+                    if (!audio) {
+                        initAudio();
+                    }
+
+                    if (audioContext.state === 'suspended') {
+                         audioContext.resume(); // Resume context on user interaction
+                    }
+
+                    if (isPlaying) {
+                        audio.pause();
+                    } else {
+                        audio.play().catch(e => {
+                            console.error("Playback failed:", e);
+                            showToast('No se pudo iniciar la reproducción', 'error');
+                             rdsInfo.textContent = 'Error de reproducción';
+                             updateSonicTitle('Error de reproducción');
+                        });
+                    }
+                });
+            } else {
+                console.error('Play/Pause button not found'); // Debugging
+            }
+
+
+            // --- Volume Control ---
+            if (volumeSlider) { // Check if element exists
+                volumeSlider.addEventListener('input', () => {
+                    console.log('Volume slider input:', volumeSlider.value); // Debugging
+                    if (gainNode) {
+                        gainNode.gain.value = volumeSlider.value;
+                        updateVolumeIcon(volumeSlider.value);
+                    }
+                     // Save volume preference (basic)
+                     localStorage.setItem('sintonia_volume', volumeSlider.value);
+                });
+
+                 // Load saved volume
+                 const savedVolume = localStorage.getItem('sintonia_volume');
+                 if (savedVolume !== null) {
+                     volumeSlider.value = savedVolume;
+                     if (gainNode) {
+                         gainNode.gain.value = savedVolume;
+                     }
+                 }
+            } else {
+                 console.error('Volume slider not found'); // Debugging
+            }
+
             if (volumeIcon) { // Check if element exists
-                volumeIcon.classList.remove('fa-volume-mute', 'fa-volume-down', 'fa-volume-up');
-                if (volume == 0) {
-                    volumeIcon.classList.add('fa-volume-mute');
-                } else if (volume < 0.5) {
-                    volumeIcon.classList.add('fa-volume-down');
-                } else {
-                    volumeIcon.classList.add('fa-volume-up');
+                 volumeIcon.addEventListener('click', () => {
+                    console.log('Button click: volumeIcon (Mute/Unmute)'); // Debugging
+                    if (gainNode) {
+                        if (gainNode.gain.value > 0) {
+                            gainNode.gain.value = 0; // Mute
+                            if (volumeSlider) volumeSlider.value = 0; // Update slider
+                            updateVolumeIcon(0);
+                            showToast('Silenciado');
+                        } else {
+                            // Restore previous volume or default
+                            const previousVolume = localStorage.getItem('sintonia_volume') || 1;
+                            gainNode.gain.value = previousVolume;
+                             if (volumeSlider) volumeSlider.value = previousVolume; // Update slider
+                            updateVolumeIcon(previousVolume);
+                            showToast('Sonido activado');
+                        }
+                         if (volumeSlider) localStorage.setItem('sintonia_volume', volumeSlider.value); // Save mute state (as volume 0)
+                    }
+                });
+                // Initial icon update based on loaded volume
+                updateVolumeIcon(volumeSlider ? volumeSlider.value : 1); // Use 1 if slider not found
+            } else {
+                console.error('Volume icon not found'); // Debugging
+            }
+
+
+            // --- Station Selection ---
+            if (stationsSelect) { // Check if element exists
+                stationsSelect.addEventListener('change', () => {
+                    console.log('Station select change:', stationsSelect.value); // Debugging
+                    initAudio(); // Initialize with the new stream URL
+                    if (isPlaying) {
+                        audio.play().catch(e => {
+                            console.error("Playback failed:", e);
+                            showToast('No se pudo cambiar de estación', 'error');
+                             rdsInfo.textContent = 'Error al cambiar de estación';
+                             updateSonicTitle('Error al cambiar de estación');
+                        });
+                    } else {
+                         rdsInfo.textContent = 'Estación seleccionada: ' + stationsSelect.options[stationsSelect.selectedIndex].text;
+                         showToast('Estación seleccionada');
+                    }
+                     // Save last played station (basic history)
+                     localStorage.setItem('sintonia_last_station', stationsSelect.value);
+                     updateSonicTitle(''); // Clear metadata placeholder on station change
+                });
+
+                 // Load last played station
+                 const lastStation = localStorage.getItem('sintonia_last_station');
+                 if (lastStation) {
+                     stationsSelect.value = lastStation;
+                 }
+            } else {
+                 console.error('Stations select not found'); // Debugging
+            }
+
+
+            function updateVolumeIcon(volume) {
+                if (volumeIcon) { // Check if element exists
+                    volumeIcon.classList.remove('fa-volume-mute', 'fa-volume-down', 'fa-volume-up');
+                    if (volume == 0) {
+                        volumeIcon.classList.add('fa-volume-mute');
+                    } else if (volume < 0.5) {
+                        volumeIcon.classList.add('fa-volume-down');
+                    } else {
+                        volumeIcon.classList.add('fa-volume-up');
+                    }
                 }
             }
-        }
 
-        // --- Audio Visualization ---
-        const canvasCtx = visualizerCanvas ? visualizerCanvas.getContext('2d') : null; // Check if canvas exists
-        let dataArray; // Will be initialized in initAudio
+            // --- Audio Visualization ---
+            const canvasCtx = visualizerCanvas ? visualizerCanvas.getContext('2d') : null; // Check if canvas exists
+            let dataArray; // Will be initialized in initAudio
 
-        function resizeCanvas() {
-            if (visualizerCanvas) { // Check if canvas exists
-                const container = visualizerCanvas.parentElement;
-                visualizerCanvas.width = container.clientWidth;
-                visualizerCanvas.height = container.clientHeight;
-            }
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas(); // Initial size
-
-        // Basic Bar Visualizer (Mode 1)
-        function drawVisualizer() {
-            if (!analyser || !canvasCtx || !isPlaying) {
-                 cancelAnimationFrame(animationFrameId);
-                 return;
+            function resizeCanvas() {
+                if (visualizerCanvas) { // Check if canvas exists
+                    const container = visualizerCanvas.parentElement;
+                    visualizerCanvas.width = container.clientWidth;
+                    visualizerCanvas.height = container.clientHeight;
+                }
             }
 
-            animationFrameId = requestAnimationFrame(drawVisualizer);
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas(); // Initial size
 
-            analyser.getByteFrequencyData(dataArray);
+            // Basic Bar Visualizer (Mode 1)
+            function drawVisualizer() {
+                if (!analyser || !canvasCtx || !isPlaying) {
+                     cancelAnimationFrame(animationFrameId);
+                     return;
+                }
 
-            canvasCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
+                animationFrameId = requestAnimationFrame(drawVisualizer);
 
-            const barWidth = (visualizerCanvas.width / dataArray.length) * 2.5;
-            let barHeight;
-            let x = 0;
+                analyser.getByteFrequencyData(dataArray);
 
-            for (let i = 0; i < dataArray.length; i++) {
-                barHeight = dataArray[i];
+                canvasCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
 
-                // Draw bars from the center outwards for a circular effect
-                const centerX = visualizerCanvas.width / 2;
-                const centerY = visualizerCanvas.height / 2;
-                const radius = Math.min(centerX, centerY) * 0.8; // Adjust radius
+                const barWidth = (visualizerCanvas.width / dataArray.length) * 2.5;
+                let barHeight;
+                let x = 0;
 
-                // Calculate angle for circular arrangement
-                const angle = (i / dataArray.length) * Math.PI * 2; // Full circle
+                for (let i = 0; i < dataArray.length; i++) {
+                    barHeight = dataArray[i];
 
-                // Calculate bar position based on angle and height
-                const startX = centerX + radius * Math.cos(angle);
-                const startY = centerY + radius * Math.sin(angle);
-                const endX = centerX + (radius + barHeight * 0.5) * Math.cos(angle); // Extend outwards
-                const endY = centerY + (radius + barHeight * 0.5) * Math.sin(angle);
+                    // Draw bars from the center outwards for a circular effect
+                    const centerX = visualizerCanvas.width / 2;
+                    const centerY = visualizerCanvas.height / 2;
+                    const radius = Math.min(centerX, centerY) * 0.8; // Adjust radius
 
-                canvasCtx.strokeStyle = `hsl(${i / dataArray.length * 360}, 100%, 50%)`; // Color based on frequency
-                canvasCtx.lineWidth = barWidth * 0.8;
-                canvasCtx.beginPath();
-                canvasCtx.moveTo(startX, startY);
-                canvasCtx.lineTo(endX, endY);
-                canvasCtx.stroke();
+                    // Calculate angle for circular arrangement
+                    const angle = (i / dataArray.length) * Math.PI * 2; // Full circle
 
-                // Simple lighting effect (optional, can be more complex)
-                if (barHeight > 150) {
-                    canvasCtx.fillStyle = 'rgba(0, 123, 255, 0.2)';
+                    // Calculate bar position based on angle and height
+                    const startX = centerX + radius * Math.cos(angle);
+                    const startY = centerY + radius * Math.sin(angle);
+                    const endX = centerX + (radius + barHeight * 0.5) * Math.cos(angle); // Extend outwards
+                    const endY = centerY + (radius + barHeight * 0.5) * Math.sin(angle);
+
+                    canvasCtx.strokeStyle = `hsl(${i / dataArray.length * 360}, 100%, 50%)`; // Color based on frequency
+                    canvasCtx.lineWidth = barWidth * 0.8;
                     canvasCtx.beginPath();
-                    canvasCtx.arc(endX, endY, barHeight * 0.1, 0, Math.PI * 2);
-                    canvasCtx.fill();
+                    canvasCtx.moveTo(startX, startY);
+                    canvasCtx.lineTo(endX, endY);
+                    canvasCtx.stroke();
+
+                    // Simple lighting effect (optional, can be more complex)
+                    if (barHeight > 150) {
+                        canvasCtx.fillStyle = 'rgba(0, 123, 255, 0.2)';
+                        canvasCtx.beginPath();
+                        canvasCtx.arc(endX, endY, barHeight * 0.1, 0, Math.PI * 2);
+                        canvasCtx.fill();
+                    }
                 }
+
+                // Add a subtle glow effect around the circle (optional)
+                 const gradient = canvasCtx.createRadialGradient(
+                     visualizerCanvas.width / 2, visualizerCanvas.height / 2, Math.min(visualizerCanvas.width, visualizerCanvas.height) * 0.4,
+                     visualizerCanvas.width / 2, visualizerCanvas.height / 2, Math.min(visualizerCanvas.width, visualizerCanvas.height) * 0.5
+                 );
+                 gradient.addColorStop(0, 'rgba(0, 123, 255, 0.1)');
+                 gradient.addColorStop(1, 'rgba(0, 123, 255, 0)');
+                 canvasCtx.fillStyle = gradient;
+                 canvasCtx.beginPath();
+                 canvasCtx.arc(visualizerCanvas.width / 2, visualizerCanvas.height / 2, Math.min(visualizerCanvas.width, visualizerCanvas.height) * 0.5, 0, Math.PI * 2);
+                 canvasCtx.fill();
+
+                 // Placeholder for other visualizer modes (e.g., Waveform, Particles)
+                 // You would add logic here to switch drawing functions based on a selected mode
             }
 
-            // Add a subtle glow effect around the circle (optional)
-             const gradient = canvasCtx.createRadialGradient(
-                 visualizerCanvas.width / 2, visualizerCanvas.height / 2, Math.min(visualizerCanvas.width, visualizerCanvas.height) * 0.4,
-                 visualizerCanvas.width / 2, visualizerCanvas.height / 2, Math.min(visualizerCanvas.width, visualizerCanvas.height) * 0.5
-             );
-             gradient.addColorStop(0, 'rgba(0, 123, 255, 0.1)');
-             gradient.addColorStop(1, 'rgba(0, 123, 255, 0)');
-             canvasCtx.fillStyle = gradient;
-             canvasCtx.beginPath();
-             canvasCtx.arc(visualizerCanvas.width / 2, visualizerCanvas.height / 2, Math.min(visualizerCanvas.width, visualizerCanvas.height) * 0.5, 0, Math.PI * 2);
-             canvasCtx.fill();
+            // Placeholder for Visualizer Mode Selection UI
 
-             // Placeholder for other visualizer modes (e.g., Waveform, Particles)
-             // You would add logic here to switch drawing functions based on a selected mode
-        }
+            // --- Sleep Timer Toggle ---
+            if (toggleSleepTimerButton && sleepTimerControls) { // Check if elements exist
+                toggleSleepTimerButton.addEventListener('click', () => {
+                    console.log('Button click: toggleSleepTimerButton'); // Debugging
+                    isSleepTimerVisible = !isSleepTimerVisible;
+                    if (isSleepTimerVisible) {
+                        sleepTimerControls.style.display = 'flex'; // Use flex to maintain layout
+                        showToast('Mostrando temporizador de apagado.');
+                    } else {
+                        sleepTimerControls.style.display = 'none';
+                        showToast('Ocultando temporizador de apagado.');
+                    }
+                });
+            } else {
+                 console.error('Sleep timer toggle button or controls not found'); // Debugging
+            }
 
-        // Placeholder for Visualizer Mode Selection UI
 
-        // --- Sleep Timer Toggle ---
-        if (toggleSleepTimerButton && sleepTimerControls) { // Check if elements exist
-            toggleSleepTimerButton.addEventListener('click', () => {
-                console.log('Button click: toggleSleepTimerButton'); // Debugging
-                isSleepTimerVisible = !isSleepTimerVisible;
-                if (isSleepTimerVisible) {
-                    sleepTimerControls.style.display = 'flex'; // Use flex to maintain layout
-                    showToast('Mostrando temporizador de apagado.');
+            // --- Sleep Timer Functionality ---
+            if (setSleepTimerButton && sleepTimerMinutesInput && cancelSleepTimerButton) { // Check if elements exist
+                setSleepTimerButton.addEventListener('click', () => {
+                    console.log('Button click: setSleepTimerButton'); // Debugging
+                    const minutes = parseInt(sleepTimerMinutesInput.value);
+                    if (isNaN(minutes) || minutes <= 0) {
+                        showToast('Por favor, introduce un número válido de minutos.', 'warning');
+                        return;
+                    }
+
+                    if (sleepTimerTimeout) {
+                        clearTimeout(sleepTimerTimeout);
+                        console.log('Existing sleep timer cleared.'); // Debugging
+                    }
+
+                    // Set timeout in milliseconds
+                    const milliseconds = minutes * 60 * 1000;
+                    console.log(`Setting sleep timer for ${minutes} minutes (${milliseconds} ms).`); // Debugging
+                    sleepTimerTimeout = setTimeout(() => {
+                        console.log('Sleep timer timeout triggered.'); // Debugging
+                        if (audio && isPlaying) {
+                            console.log('Pausing audio due to sleep timer.'); // Debugging
+                            audio.pause();
+                            showToast('Temporizador de apagado activado.', 'info');
+                        } else {
+                             console.log('Sleep timer triggered, but audio was not playing or audio object invalid.'); // Debugging
+                             if (!audio) console.error('Audio object invalid in sleep timer callback.'); // Debugging
+                             if (!isPlaying) console.log('Audio was not playing when sleep timer triggered.'); // Debugging
+                        }
+                         sleepTimerTimeout = null; // Reset timeout ID
+                         cancelSleepTimerButton.style.display = 'none'; // Hide cancel button
+                    }, milliseconds);
+
+                    showToast(`Temporizador de apagado configurado para ${minutes} minutos.`);
+                    cancelSleepTimerButton.style.display = 'inline-flex'; // Show cancel button, use inline-flex for button styling
+                });
+
+                 cancelSleepTimerButton.addEventListener('click', () => {
+                     console.log('Button click: cancelSleepTimerButton'); // Debugging
+                     if (sleepTimerTimeout) {
+                         clearTimeout(sleepTimerTimeout);
+                         sleepTimerTimeout = null;
+                         console.log('Sleep timer cancelled by user.'); // Debugging
+                         showToast('Temporizador de apagado cancelado.');
+                         cancelSleepTimerButton.style.display = 'none'; // Hide cancel button
+                     } else {
+                         console.log('Cancel sleep timer clicked, but no timer was active.'); // Debugging
+                     }
+                 });
+            } else {
+                console.error('Sleep timer buttons or input not found'); // Debugging
+            }
+
+
+            // --- Weekly Scheduler Toggle ---
+            if (toggleWeeklySchedulerButton && weeklySchedulerControls) { // Check if elements exist
+                toggleWeeklySchedulerButton.addEventListener('click', () => {
+                    console.log('Button click: toggleWeeklySchedulerButton'); // Debugging
+                    isWeeklySchedulerVisible = !isWeeklySchedulerVisible;
+                    if (isWeeklySchedulerVisible) {
+                        weeklySchedulerControls.style.display = 'flex'; // Use flex to maintain layout
+                        showToast('Mostrando programador semanal.');
+                    } else {
+                        weeklySchedulerControls.style.display = 'none';
+                        showToast('Ocultando programador semanal.');
+                    }
+                });
+            } else {
+                 console.error('Weekly scheduler toggle button or controls not found'); // Debugging
+            }
+
+
+            // --- Weekly Scheduler Functionality ---
+            function loadSchedule() {
+                console.log('loadSchedule called'); // Debugging
+                const savedSchedule = localStorage.getItem('sintonia_schedule');
+                if (savedSchedule) {
+                    weeklySchedule = JSON.parse(savedSchedule);
+                    console.log('Loaded schedule:', weeklySchedule); // Debugging
+                    // Update UI based on loaded schedule
+                     if (scheduleDayCheckboxes) { // Check if elements exist
+                        scheduleDayCheckboxes.forEach(checkbox => {
+                            checkbox.checked = weeklySchedule.some(s => s.day === parseInt(checkbox.value));
+                        });
+                     }
+                     if (scheduleTimeInput && weeklySchedule.length > 0) { // Check if elements exist
+                         // Just load the time from the first schedule entry for simplicity
+                         scheduleTimeInput.value = weeklySchedule[0].time;
+                     } else if (scheduleTimeInput) {
+                         scheduleTimeInput.value = '07:00'; // Default time
+                     }
                 } else {
-                    sleepTimerControls.style.display = 'none';
-                    showToast('Ocultando temporizador de apagado.');
+                    weeklySchedule = [];
+                    console.log('No saved schedule found.'); // Debugging
+                     if (scheduleTimeInput) { // Check if element exists
+                        scheduleTimeInput.value = '07:00'; // Default time
+                     }
                 }
-            });
-        } else {
-             console.error('Sleep timer toggle button or controls not found'); // Debugging
-        }
+                 // Start checking schedule if any exists
+                 if (weeklySchedule.length > 0 && !scheduleCheckInterval) {
+                     startScheduleCheck();
+                 }
+            }
 
+            function saveSchedule() {
+                console.log('Button click: saveScheduleButton'); // Debugging
+                const selectedDays = Array.from(scheduleDayCheckboxes || []) // Use empty array if checkboxes not found
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => parseInt(checkbox.value));
+                const selectedTime = scheduleTimeInput ? scheduleTimeInput.value : '07:00'; // Use default if input not found
 
-        // --- Sleep Timer Functionality ---
-        if (setSleepTimerButton && sleepTimerMinutesInput && cancelSleepTimerButton) { // Check if elements exist
-            setSleepTimerButton.addEventListener('click', () => {
-                console.log('Button click: setSleepTimerButton'); // Debugging
-                const minutes = parseInt(sleepTimerMinutesInput.value);
-                if (isNaN(minutes) || minutes <= 0) {
-                    showToast('Por favor, introduce un número válido de minutos.', 'warning');
+                if (selectedDays.length === 0) {
+                    showToast('Selecciona al menos un día para programar.', 'warning');
+                    console.warn('Save schedule clicked, but no days selected.'); // Debugging
                     return;
                 }
 
-                if (sleepTimerTimeout) {
-                    clearTimeout(sleepTimerTimeout);
-                    console.log('Existing sleep timer cleared.'); // Debugging
-                }
+                weeklySchedule = selectedDays.map(day => ({ day: day, time: selectedTime }));
+                localStorage.setItem('sintonia_schedule', JSON.stringify(weeklySchedule));
+                showToast('Programación guardada.');
+                console.log('Schedule saved:', weeklySchedule); // Debugging
 
-                // Set timeout in milliseconds
-                const milliseconds = minutes * 60 * 1000;
-                console.log(`Setting sleep timer for ${minutes} minutes (${milliseconds} ms).`); // Debugging
-                sleepTimerTimeout = setTimeout(() => {
-                    console.log('Sleep timer timeout triggered.'); // Debugging
-                    if (audio && isPlaying) {
-                        console.log('Pausing audio due to sleep timer.'); // Debugging
-                        audio.pause();
-                        showToast('Temporizador de apagado activado.', 'info');
-                    } else {
-                         console.log('Sleep timer triggered, but audio was not playing or audio object invalid.'); // Debugging
-                         if (!audio) console.error('Audio object invalid in sleep timer callback.'); // Debugging
-                         if (!isPlaying) console.log('Audio was not playing when sleep timer triggered.'); // Debugging
-                    }
-                     sleepTimerTimeout = null; // Reset timeout ID
-                     cancelSleepTimerButton.style.display = 'none'; // Hide cancel button
-                }, milliseconds);
+                // Start or restart schedule check
+                stopScheduleCheck();
+                startScheduleCheck();
+            }
 
-                showToast(`Temporizador de apagado configurado para ${minutes} minutos.`);
-                cancelSleepTimerButton.style.display = 'inline-flex'; // Show cancel button, use inline-flex for button styling
-            });
-
-             cancelSleepTimerButton.addEventListener('click', () => {
-                 console.log('Button click: cancelSleepTimerButton'); // Debugging
-                 if (sleepTimerTimeout) {
-                     clearTimeout(sleepTimerTimeout);
-                     sleepTimerTimeout = null;
-                     console.log('Sleep timer cancelled by user.'); // Debugging
-                     showToast('Temporizador de apagado cancelado.');
-                     cancelSleepTimerButton.style.display = 'none'; // Hide cancel button
-                 } else {
-                     console.log('Cancel sleep timer clicked, but no timer was active.'); // Debugging
-                 }
-             });
-        } else {
-            console.error('Sleep timer buttons or input not found'); // Debugging
-        }
-
-
-        // --- Weekly Scheduler Toggle ---
-        if (toggleWeeklySchedulerButton && weeklySchedulerControls) { // Check if elements exist
-            toggleWeeklySchedulerButton.addEventListener('click', () => {
-                console.log('Button click: toggleWeeklySchedulerButton'); // Debugging
-                isWeeklySchedulerVisible = !isWeeklySchedulerVisible;
-                if (isWeeklySchedulerVisible) {
-                    weeklySchedulerControls.style.display = 'flex'; // Use flex to maintain layout
-                    showToast('Mostrando programador semanal.');
-                } else {
-                    weeklySchedulerControls.style.display = 'none';
-                    showToast('Ocultando programador semanal.');
-                }
-            });
-        } else {
-             console.error('Weekly scheduler toggle button or controls not found'); // Debugging
-        }
-
-
-        // --- Weekly Scheduler Functionality ---
-        function loadSchedule() {
-            console.log('loadSchedule called'); // Debugging
-            const savedSchedule = localStorage.getItem('sintonia_schedule');
-            if (savedSchedule) {
-                weeklySchedule = JSON.parse(savedSchedule);
-                console.log('Loaded schedule:', weeklySchedule); // Debugging
-                // Update UI based on loaded schedule
-                 if (scheduleDayCheckboxes) { // Check if elements exist
-                    scheduleDayCheckboxes.forEach(checkbox => {
-                        checkbox.checked = weeklySchedule.some(s => s.day === parseInt(checkbox.value));
-                    });
-                 }
-                 if (scheduleTimeInput && weeklySchedule.length > 0) { // Check if elements exist
-                     // Just load the time from the first schedule entry for simplicity
-                     scheduleTimeInput.value = weeklySchedule[0].time;
-                 } else if (scheduleTimeInput) {
-                     scheduleTimeInput.value = '07:00'; // Default time
-                 }
-            } else {
+            function clearSchedule() {
+                console.log('Button click: clearScheduleButton'); // Debugging
+                localStorage.removeItem('sintonia_schedule');
                 weeklySchedule = [];
-                console.log('No saved schedule found.'); // Debugging
+                if (scheduleDayCheckboxes) { // Check if elements exist
+                    scheduleDayCheckboxes.forEach(checkbox => checkbox.checked = false);
+                }
                  if (scheduleTimeInput) { // Check if element exists
-                    scheduleTimeInput.value = '07:00'; // Default time
+                    scheduleTimeInput.value = '07:00';
                  }
-            }
-             // Start checking schedule if any exists
-             if (weeklySchedule.length > 0 && !scheduleCheckInterval) {
-                 startScheduleCheck();
-             }
-        }
-
-        function saveSchedule() {
-            console.log('Button click: saveScheduleButton'); // Debugging
-            const selectedDays = Array.from(scheduleDayCheckboxes || []) // Use empty array if checkboxes not found
-                .filter(checkbox => checkbox.checked)
-                .map(checkbox => parseInt(checkbox.value));
-            const selectedTime = scheduleTimeInput ? scheduleTimeInput.value : '07:00'; // Use default if input not found
-
-            if (selectedDays.length === 0) {
-                showToast('Selecciona al menos un día para programar.', 'warning');
-                console.warn('Save schedule clicked, but no days selected.'); // Debugging
-                return;
+                showToast('Programación limpiada.');
+                console.log('Schedule cleared.'); // Debugging
+                stopScheduleCheck();
             }
 
-            weeklySchedule = selectedDays.map(day => ({ day: day, time: selectedTime }));
-            localStorage.setItem('sintonia_schedule', JSON.stringify(weeklySchedule));
-            showToast('Programación guardada.');
-            console.log('Schedule saved:', weeklySchedule); // Debugging
-
-            // Start or restart schedule check
-            stopScheduleCheck();
-            startScheduleCheck();
-        }
-
-        function clearSchedule() {
-            console.log('Button click: clearScheduleButton'); // Debugging
-            localStorage.removeItem('sintonia_schedule');
-            weeklySchedule = [];
-            if (scheduleDayCheckboxes) { // Check if elements exist
-                scheduleDayCheckboxes.forEach(checkbox => checkbox.checked = false);
-            }
-             if (scheduleTimeInput) { // Check if element exists
-                scheduleTimeInput.value = '07:00';
-             }
-            showToast('Programación limpiada.');
-            console.log('Schedule cleared.'); // Debugging
-            stopScheduleCheck();
-        }
-
-        function startScheduleCheck() {
-             console.log('startScheduleCheck called'); // Debugging
-             if (weeklySchedule.length === 0) {
-                 console.log('No schedule to check, interval not started.'); // Debugging
-                 return;
-             }
-             if (scheduleCheckInterval) {
-                 console.log('Schedule check interval already running.'); // Debugging
-                 return; // Prevent multiple intervals
-             }
-
-
-             // Check every minute
-             scheduleCheckInterval = setInterval(() => {
-                 console.log('Checking schedule...'); // Debugging
-                 const now = new Date();
-                 const currentDay = now.getDay(); // Sunday is 0, Monday is 1, ..., Saturday is 6
-                 const currentTime = now.toTimeString().slice(0, 5); // Get HH:MM format
-                 console.log(`Current Day: ${currentDay}, Current Time: ${currentTime}`); // Debugging
-
-                 const shouldPlay = weeklySchedule.some(schedule => {
-                     console.log(`Comparing current ${currentDay}:${currentTime} with scheduled ${schedule.day}:${schedule.time}`); // Debugging
-                     return schedule.day === currentDay && schedule.time === currentTime;
-                 });
-
-                 if (shouldPlay && !isPlaying) {
-                     console.log(`Scheduled playback triggered for Day ${currentDay} at ${currentTime}`); // Debugging
-                     // Trigger playback
-                     if (!audio) {
-                        console.log('Initializing audio for scheduled playback.'); // Debugging
-                        initAudio();
-                     }
-                     if (audioContext && audioContext.state === 'suspended') { // Check if context exists
-                         console.log('Resuming audio context for scheduled playback.'); // Debugging
-                         audioContext.resume();
-                     }
-                      if (audio) { // Check if audio exists
-                        console.log('Attempting audio play for scheduled playback.'); // Debugging
-                        audio.play().catch(e => {
-                            console.error("Scheduled playback failed:", e);
-                            showToast('Error al iniciar la reproducción programada', 'error');
-                        });
-                         showToast('Iniciando reproducción programada.');
-                      } else {
-                          console.error('Audio object not initialized for scheduled playback'); // Debugging
-                      }
-                 } else {
-                     console.log('No scheduled playback at this time or already playing.'); // Debugging
+            function startScheduleCheck() {
+                 console.log('startScheduleCheck called'); // Debugging
+                 if (weeklySchedule.length === 0) {
+                     console.log('No schedule to check, interval not started.'); // Debugging
+                     return;
                  }
-             }, 60 * 1000); // Check every minute
-             console.log('Schedule check interval started.'); // Debugging
-        }
+                 if (scheduleCheckInterval) {
+                     console.log('Schedule check interval already running.'); // Debugging
+                     return; // Prevent multiple intervals
+                 }
 
-        function stopScheduleCheck() {
-            console.log('stopScheduleCheck called'); // Debugging
-            if (scheduleCheckInterval) {
-                clearInterval(scheduleCheckInterval);
-                scheduleCheckInterval = null;
-                console.log('Schedule check stopped.'); // Debugging
+
+                 // Check every minute
+                 scheduleCheckInterval = setInterval(() => {
+                     console.log('Checking schedule...'); // Debugging
+                     const now = new Date();
+                     const currentDay = now.getDay(); // Sunday is 0, Monday is 1, ..., Saturday is 6
+                     const currentTime = now.toTimeString().slice(0, 5); // Get HH:MM format
+                     console.log(`Current Day: ${currentDay}, Current Time: ${currentTime}`); // Debugging
+
+                     const shouldPlay = weeklySchedule.some(schedule => {
+                         console.log(`Comparing current ${currentDay}:${currentTime} with scheduled ${schedule.day}:${schedule.time}`); // Debugging
+                         return schedule.day === currentDay && schedule.time === currentTime;
+                     });
+
+                     if (shouldPlay && !isPlaying) {
+                         console.log(`Scheduled playback triggered for Day ${currentDay} at ${currentTime}`); // Debugging
+                         // Trigger playback
+                         if (!audio) {
+                            console.log('Initializing audio for scheduled playback.'); // Debugging
+                            initAudio();
+                         }
+                         if (audioContext && audioContext.state === 'suspended') { // Check if context exists
+                             console.log('Resuming audio context for scheduled playback.'); // Debugging
+                             audioContext.resume();
+                         }
+                          if (audio) { // Check if audio exists
+                            console.log('Attempting audio play for scheduled playback.'); // Debugging
+                            audio.play().catch(e => {
+                                console.error("Scheduled playback failed:", e);
+                                showToast('Error al iniciar la reproducción programada', 'error');
+                            });
+                             showToast('Iniciando reproducción programada.');
+                          } else {
+                              console.error('Audio object not initialized for scheduled playback'); // Debugging
+                          }
+                     } else {
+                         console.log('No scheduled playback at this time or already playing.'); // Debugging
+                     }
+                 }, 60 * 1000); // Check every minute
+                 console.log('Schedule check interval started.'); // Debugging
+            }
+
+            function stopScheduleCheck() {
+                console.log('stopScheduleCheck called'); // Debugging
+                if (scheduleCheckInterval) {
+                    clearInterval(scheduleCheckInterval);
+                    scheduleCheckInterval = null;
+                    console.log('Schedule check stopped.'); // Debugging
+                } else {
+                     console.log('No schedule check interval was running.'); // Debugging
+                }
+            }
+
+            if (saveScheduleButton) { // Check if button exists
+                saveScheduleButton.addEventListener('click', saveSchedule);
             } else {
-                 console.log('No schedule check interval was running.'); // Debugging
+                console.error('Save schedule button not found'); // Debugging
             }
-        }
 
-        if (saveScheduleButton) { // Check if button exists
-            saveScheduleButton.addEventListener('click', saveSchedule);
-        } else {
-            console.error('Save schedule button not found'); // Debugging
-        }
-
-        if (clearScheduleButton) { // Check if button exists
-            clearScheduleButton.addEventListener('click', clearSchedule);
-        } else {
-            console.error('Clear schedule button not found'); // Debugging
-        }
+            if (clearScheduleButton) { // Check if button exists
+                clearScheduleButton.addEventListener('click', clearSchedule);
+            } else {
+                console.error('Clear schedule button not found'); // Debugging
+            }
 
 
-        // --- Kick.com Embed Toggle ---
-        if (toggleKickButton && kickEmbedContainer) { // Check if elements exist
-            toggleKickButton.addEventListener('click', () => {
-                console.log('Button click: toggleKickButton'); // Debugging
-                isKickEmbedVisible = !isKickEmbedVisible;
-                if (isKickEmbedVisible) {
-                    kickEmbedContainer.style.display = 'block';
-                     showToast('Intentando cargar transmisión en vivo...');
-                     // Inform the user that it might be blocked
-                     setTimeout(() => {
-                         // This check is not foolproof due to cross-origin limitations,
-                         // but it's a basic attempt. The primary indicator will be the 'connection refused' error in console.
-                         try {
-                             const iframe = kickEmbedContainer.querySelector('iframe');
-                             // Attempt to check if the iframe has content loaded.
-                             // Accessing contentDocument or contentWindow can throw errors if blocked by CORS.
-                             // A simple check for the existence of contentWindow is a weak indicator.
-                             // The most reliable way to know if it's blocked is the browser's console error.
-                             if (iframe && iframe.contentWindow) {
-                                 // We can't reliably check loaded state cross-origin,
-                                 // so we'll just show the warning message regardless after a delay.
-                                 showToast('La transmisión en vivo podría estar bloqueada por el sitio de origen.', 'warning');
-                                 showToast('Considera abrirla en una nueva pestaña si no carga.', 'info', 4000);
-                             } else {
-                                  // If contentWindow is null, it's likely blocked or not ready.
+            // --- Kick.com Embed Toggle ---
+            if (toggleKickButton && kickEmbedContainer) { // Check if elements exist
+                toggleKickButton.addEventListener('click', () => {
+                    console.log('Button click: toggleKickButton'); // Debugging
+                    isKickEmbedVisible = !isKickEmbedVisible;
+                    if (isKickEmbedVisible) {
+                        kickEmbedContainer.style.display = 'block';
+                         showToast('Intentando cargar transmisión en vivo...');
+                         // Inform the user that it might be blocked
+                         setTimeout(() => {
+                             // This check is not foolproof due to cross-origin limitations,
+                             // but it's a basic attempt. The primary indicator will be the 'connection refused' error in console.
+                             try {
+                                 const iframe = kickEmbedContainer.querySelector('iframe');
+                                 // Attempt to check if the iframe has content loaded.
+                                 // Accessing contentDocument or contentWindow can throw errors if blocked by CORS.
+                                 // A simple check for the existence of contentWindow is a weak indicator.
+                                 // The most reliable way to know if it's blocked is the browser's console error.
+                                 if (iframe && iframe.contentWindow) {
+                                     // We can't reliably check loaded state cross-origin,
+                                     // so we'll just show the warning message regardless after a delay.
+                                     showToast('La transmisión en vivo podría estar bloqueada por el sitio de origen.', 'warning');
+                                     showToast('Considera abrirla en una nueva pestaña si no carga.', 'info', 4000);
+                                 } else {
+                                      // If contentWindow is null, it's likely blocked or not ready.
+                                      showToast('La transmisión en vivo podría estar bloqueada por el sitio de origen.', 'warning');
+                                      showToast('Considera abrirla en una nueva pestaña si no carga.', 'info', 4000);
+                                 }
+                             } catch (e) {
+                                  // Catch any potential cross-origin errors during the check
+                                  console.error('Cross-origin check error for Kick embed:', e); // Debugging
                                   showToast('La transmisión en vivo podría estar bloqueada por el sitio de origen.', 'warning');
                                   showToast('Considera abrirla en una nueva pestaña si no carga.', 'info', 4000);
                              }
-                         } catch (e) {
-                              // Catch any potential cross-origin errors during the check
-                              console.error('Cross-origin check error for Kick embed:', e); // Debugging
-                              showToast('La transmisión en vivo podría estar bloqueada por el sitio de origen.', 'warning');
-                              showToast('Considera abrirla en una nueva pestaña si no carga.', 'info', 4000);
+                         }, 2000); // Give it a moment to attempt loading
+
+
+                    } else {
+                        kickEmbedContainer.style.display = 'none';
+                         showToast('Ocultando transmisión en vivo.');
+                         // Optionally pause the iframe video when hidden
+                         const kickIframe = kickEmbedContainer.querySelector('iframe');
+                         if (kickIframe) {
+                             // This is tricky due to cross-origin policies.
+                             // A simple way might be to reload the iframe source when showing again,
+                             // or use the iframe's contentWindow.postMessage if the embed supports it.
+                             // For now, just hiding the container is the most reliable approach.
                          }
-                     }, 2000); // Give it a moment to attempt loading
+                    }
+                });
+            } else {
+                console.error('Kick toggle button or container not found'); // Debugging
+            }
 
 
+            // --- News Link Button ---
+            if (newsLinkButton) { // Check if button exists
+                newsLinkButton.addEventListener('click', () => {
+                    console.log('Button click: newsLinkButton'); // Debugging
+                    // Open the news website in a new tab
+                    window.open('https://www.sintonia102.com/', '_blank');
+                    showToast('Abriendo web de noticias...');
+                });
+            } else {
+                console.error('News link button not found'); // Debugging
+            }
+
+
+            // --- Share Button ---
+            if (shareButton) { // Check if button exists
+                shareButton.addEventListener('click', async () => {
+                    console.log('Button click: shareButton'); // Debugging
+                    const shareData = {
+                        title: document.title,
+                        url: window.location.href
+                    };
+
+                    try {
+                        // Use the Web Share API if available
+                        if (navigator.share) {
+                            await navigator.share(shareData);
+                            console.log('Application shared successfully'); // Debugging
+                            showToast('Aplicación compartida.');
+                        } else {
+                            // Fallback: Copy URL to clipboard
+                             if (navigator.clipboard && navigator.clipboard.writeText) { // Check if clipboard API is available
+                                await navigator.clipboard.writeText(shareData.url);
+                                console.log('URL copied to clipboard'); // Debugging
+                                showToast('URL copiada al portapapeles.');
+                             } else {
+                                 console.warn('Clipboard API not available, could not copy URL.'); // Debugging
+                                 showToast('No se pudo copiar la URL. Copia la dirección de la barra de direcciones.', 'warning');
+                             }
+                        }
+                    } catch (err) {
+                        console.error('Error sharing or copying:', err); // Debugging
+                        showToast('No se pudo compartir la aplicación.', 'error');
+                    }
+                });
+            } else {
+                console.error('Share button not found'); // Debugging
+            }
+
+
+            // --- History (Basic Placeholder) ---
+            // History is handled by loading the last station on page load.
+            // For a full history, you'd maintain an array in localStorage.
+
+
+            // --- Theme Toggle ---
+            if (themeToggle) { // Check if button exists
+                themeToggle.addEventListener('click', () => {
+                    console.log('Button click: themeToggle'); // Debugging
+                    document.body.classList.toggle('light-theme');
+                    const isLightTheme = document.body.classList.contains('light-theme');
+                     const iconElement = themeToggle.querySelector('i');
+                     if (iconElement) { // Check if icon element exists
+                        iconElement.classList.remove('fa-sun', 'fa-moon');
+                        if (isLightTheme) {
+                            iconElement.classList.add('fa-moon');
+                             showToast('Tema claro activado.');
+                             localStorage.setItem('sintonia_theme', 'light');
+                        } else {
+                            iconElement.classList.add('fa-sun');
+                             showToast('Tema oscuro activado.');
+                             localStorage.setItem('sintonia_theme', 'dark');
+                        }
+                     } else {
+                         console.error('Theme toggle icon not found'); // Debugging
+                     }
+                });
+
+                // Load saved theme
+                const savedTheme = localStorage.getItem('sintonia_theme');
+                if (savedTheme === 'light') {
+                     document.body.classList.add('light-theme');
+                     const iconElement = themeToggle.querySelector('i');
+                     if (iconElement) { // Check if icon element exists
+                         iconElement.classList.remove('fa-sun');
+                         iconElement.classList.add('fa-moon');
+                     }
                 } else {
-                    kickEmbedContainer.style.display = 'none';
-                     showToast('Ocultando transmisión en vivo.');
-                     // Optionally pause the iframe video when hidden
-                     const kickIframe = kickEmbedContainer.querySelector('iframe');
-                     if (kickIframe) {
-                         // This is tricky due to cross-origin policies.
-                         // A simple way might be to reload the iframe source when showing again,
-                         // or use the iframe's contentWindow.postMessage if the embed supports it.
-                         // For now, just hiding the container is the most reliable approach.
+                     // Default to dark theme if no preference or preference is 'dark'
+                     document.body.classList.remove('light-theme');
+                     const iconElement = themeToggle.querySelector('i');
+                     if (iconElement) { // Check if icon element exists
+                         iconElement.classList.remove('fa-moon');
+                         iconElement.classList.add('fa-sun');
+                     }
+                }
+            } else {
+                console.error('Theme toggle button not found'); // Debugging
+            }
+
+
+            // --- Toast Notification System ---
+            function showToast(message, type = 'info', duration = 3000) {
+                console.log('Showing toast:', message); // Debugging
+                if (!toastContainer) {
+                     console.error('Toast container not found'); // Debugging
+                     return;
+                }
+                const toast = document.createElement('div');
+                toast.classList.add('toast');
+                if (type === 'error') {
+                     toast.style.backgroundColor = 'rgba(220, 53, 69, 0.8)'; // Red for errors
+                } else if (type === 'warning') {
+                     toast.style.backgroundColor = 'rgba(255, 193, 7, 0.8)'; // Yellow for warnings
+                }
+                toast.textContent = message;
+                toastContainer.appendChild(toast);
+
+                // Show the toast
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 10); // Small delay to allow CSS transition
+
+                // Hide and remove the toast
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    toast.addEventListener('transitionend', () => {
+                        toast.remove();
+                    });
+                }, duration);
+            }
+
+            // --- Keyboard Shortcuts ---
+            document.addEventListener('keydown', (event) => {
+                // Prevent default browser behavior for spacebar (scrolling)
+                if (event.code === 'Space' && event.target.tagName !== 'INPUT' && event.target.tagName !== 'SELECT') {
+                    event.preventDefault();
+                     if (playPauseButton) { // Check if button exists
+                        playPauseButton.click();
+                     }
+                }
+
+                // Volume up/down with arrow keys
+                if (event.code === 'ArrowUp') {
+                    event.preventDefault();
+                     if (volumeSlider) { // Check if element exists
+                        volumeSlider.value = Math.min(1, parseFloat(volumeSlider.value) + 0.05);
+                        volumeSlider.dispatchEvent(new Event('input')); // Trigger input event
+                     }
+                }
+
+                if (event.code === 'ArrowDown') {
+                    event.preventDefault();
+                     if (volumeSlider) { // Check if element exists
+                        volumeSlider.value = Math.max(0, parseFloat(volumeSlider.value) - 0.05);
+                        volumeSlider.dispatchEvent(new Event('input')); // Trigger input event
                      }
                 }
             });
-        } else {
-            console.error('Kick toggle button or container not found'); // Debugging
-        }
 
+            // --- Accessibility (ARIA attributes added in HTML) ---
+            // Ensure sufficient color contrast (handled by theme styles)
+            // Focus management for keyboard navigation (default browser behavior is often sufficient for simple controls)
 
-        // --- News Link Button ---
-        if (newsLinkButton) { // Check if button exists
-            newsLinkButton.addEventListener('click', () => {
-                console.log('Button click: newsLinkButton'); // Debugging
-                // Open the news website in a new tab
-                window.open('https://www.sintonia102.com/', '_blank');
-                showToast('Abriendo web de noticias...');
-            });
-        } else {
-            console.error('News link button not found'); // Debugging
-        }
+            // --- Performance Optimization ---
+            // Animation Frame used for visualizer
+            // Avoid complex calculations inside the animation loop
+            // Consider optimizing the visualizer drawing for performance (e.g., drawing fewer bars at lower resolutions)
 
+            // --- Compatibility ---
+            // Web Audio API support varies, but is good in modern browsers.
+            // Canvas/WebGL is widely supported.
+            // FLV.js would be needed for FLV/RTMP streams if not using a simple embed (not implemented here).
 
-        // --- Share Button ---
-        if (shareButton) { // Check if button exists
-            shareButton.addEventListener('click', async () => {
-                console.log('Button click: shareButton'); // Debugging
-                const shareData = {
-                    title: document.title,
-                    url: window.location.href
-                };
+            // --- Mobile Experience ---
+            // Responsive CSS is implemented.
+            // Touch gestures for controls (default button behavior).
+            // Full-screen mode for visualizer (requires separate implementation, e.g., using Fullscreen API).
 
-                try {
-                    // Use the Web Share API if available
-                    if (navigator.share) {
-                        await navigator.share(shareData);
-                        console.log('Application shared successfully'); // Debugging
-                        showToast('Aplicación compartida.');
-                    } else {
-                        // Fallback: Copy URL to clipboard
-                         if (navigator.clipboard && navigator.clipboard.writeText) { // Check if clipboard API is available
-                            await navigator.clipboard.writeText(shareData.url);
-                            console.log('URL copied to clipboard'); // Debugging
-                            showToast('URL copiada al portapapeles.');
-                         } else {
-                             console.warn('Clipboard API not available, could not copy URL.'); // Debugging
-                             showToast('No se pudo copiar la URL. Copia la dirección de la barra de direcciones.', 'warning');
-                         }
-                    }
-                } catch (err) {
-                    console.error('Error sharing or copying:', err); // Debugging
-                    showToast('No se pudo compartir la aplicación.', 'error');
-                }
-            });
-        } else {
-            console.error('Share button not found'); // Debugging
-        }
+            // --- Advanced Features (Placeholders/Notes) ---
 
+            // Frequency Tuning: Requires streams that support changing frequency or selecting different streams for fine tuning.
+            // RELIABLE RDS Metadata Display: Requires compatible stream/API for metadata.
+            // Robust Scheduling: Requires a server-side component for reliable execution when the browser is closed.
+            // Advanced FLV/RTMP Integration (beyond simple iframe embed): Would use a library like FLV.js and handle buffering, error states, etc.
+            // Signal Strength Indicator: Could be simulated based on buffer state or network conditions (complex).
+            // Lighting Effects: More advanced effects could use WebGL shaders.
+            // Subtle Sound Effects: Play short audio files on button clicks, state changes, etc.
 
-        // --- History (Basic Placeholder) ---
-        // History is handled by loading the last station on page load.
-        // For a full history, you'd maintain an array in localStorage.
+            // --- Initial Setup ---
+            initAudio(); // Initialize audio with the default selected station
+            loadSchedule(); // Load saved schedule on startup
+            fetchAndDisplayRss(RSS_FEED_URL); // Load RSS feed on startup
 
+             // Basic documentation comment:
+             /*
+              SINTONIA Radio Player - Basic Implementation
 
-        // --- Theme Toggle ---
-        if (themeToggle) { // Check if button exists
-            themeToggle.addEventListener('click', () => {
-                console.log('Button click: themeToggle'); // Debugging
-                document.body.classList.toggle('light-theme');
-                const isLightTheme = document.body.classList.contains('light-theme');
-                 const iconElement = themeToggle.querySelector('i');
-                 if (iconElement) { // Check if icon element exists
-                    iconElement.classList.remove('fa-sun', 'fa-moon');
-                    if (isLightTheme) {
-                        iconElement.classList.add('fa-moon');
-                         showToast('Tema claro activado.');
-                         localStorage.setItem('sintonia_theme', 'light');
-                    } else {
-                        iconElement.classList.add('fa-sun');
-                         showToast('Tema oscuro activado.');
-                         localStorage.setItem('sintonia_theme', 'dark');
-                    }
-                 } else {
-                     console.error('Theme toggle icon not found'); // Debugging
-                 }
-            });
+              Features Included:
+              - Premium Dark/Light UI with Blue Accents
+              - Responsive Design (Mobile-First)
+              - Multi-Station Selection (basic)
+              - Play/Pause Control
+              - Volume Control with Mute
+              - Basic Circular Audio Visualizer (Bar Mode)
+              - Basic Sleep Timer (with toggle icon)
+              - Basic Weekly Scheduler (with toggle icon - BROWSER-BASED, LIMITED RELIABILITY)
+              - Kick.com Embed Toggle (will likely be blocked by X-Frame-Options)
+              - News Link Button (replaces Favorites placeholder)
+              - Share Application Button (uses Web Share API or copies URL)
+              - Basic History (Last Station)
+              - Theme Toggle (Dark/Light)
+              - Toast Notifications
+              - Keyboard Shortcuts (Space, Arrow Up/Down)
+              - Accessibility (ARIA attributes, CSS contrast)
+              - Placeholder div for Metadata (sonic_title)
+              - Basic RSS Feed Reader (will likely be blocked by CORS)
+              - Footer with Copyright
 
-            // Load saved theme
-            const savedTheme = localStorage.getItem('sintonia_theme');
-            if (savedTheme === 'light') {
-                 document.body.classList.add('light-theme');
-                 const iconElement = themeToggle.querySelector('i');
-                 if (iconElement) { // Check if icon element exists
-                     iconElement.classList.remove('fa-sun');
-                     iconElement.classList.add('fa-moon');
-                 }
-            } else {
-                 // Default to dark theme if no preference or preference is 'dark'
-                 document.body.classList.remove('light-theme');
-                 const iconElement = themeToggle.querySelector('i');
-                 if (iconElement) { // Check if icon element exists
-                     iconElement.classList.remove('fa-moon');
-                     iconElement.classList.add('fa-sun');
-                 }
-            }
-        } else {
-            console.error('Theme toggle button not found'); // Debugging
-        }
+              Features Not Fully Implemented (Require more complex logic/backend):
+              - Fine Frequency Tuning
+              - RELIABLE RDS Metadata Display (requires compatible stream/API)
+              - RELIABLE Weekly Scheduler (requires server)
+              - Advanced FLV/RTMP Integration (beyond simple iframe embed)
+              - Signal Strength Indicator
+              - Advanced Lighting Effects
+              - Subtle Sound Effects for all interactions
+              - Multiple Visualizer Modes (only basic bar implemented)
+              - Full-screen Visualizer Mode
+              - Robust Error Handling for all scenarios
+              - Periodic RSS Feed Refresh
 
+              Limitations due to Browser Security / External Site Configuration:
+              - RSS Feed Reader: Likely blocked by CORS policy on the feed server. Cannot be fixed client-side.
+              - Kick.com Embed: Likely blocked by X-Frame-Options policy on Kick.com. Cannot be fixed client-side.
 
-        // --- Toast Notification System ---
-        function showToast(message, type = 'info', duration = 3000) {
-            console.log('Showing toast:', message); // Debugging
-            if (!toastContainer) {
-                 console.error('Toast container not found'); // Debugging
-                 return;
-            }
-            const toast = document.createElement('div');
-            toast.classList.add('toast');
-            if (type === 'error') {
-                 toast.style.backgroundColor = 'rgba(220, 53, 69, 0.8)'; // Red for errors
-            } else if (type === 'warning') {
-                 toast.style.backgroundColor = 'rgba(255, 193, 7, 0.8)'; // Yellow for warnings
-            }
-            toast.textContent = message;
-            toastContainer.appendChild(toast);
+              To Extend:
+              - Add more stations to the <select> element.
+              - Implement other visualizer modes in the drawVisualizer function.
+              - Enhance History using localStorage arrays.
+              - Implement a server-side component for reliable scheduling.
+              - If the station provides a metadata source (like a JSON API), you could add logic to fetch and display it in the 'sonic_title' div.
+              - Add subtle sound effects by playing short audio files.
+              - Implement full-screen mode using the Fullscreen API.
+              - Add automatic periodic refresh for the RSS feed (e.g., using setInterval).
+             */
 
-            // Show the toast
-            setTimeout(() => {
-                toast.classList.add('show');
-            }, 10); // Small delay to allow CSS transition
-
-            // Hide and remove the toast
-            setTimeout(() => {
-                toast.classList.remove('show');
-                toast.addEventListener('transitionend', () => {
-                    toast.remove();
-                });
-            }, duration);
-        }
-
-        // --- Keyboard Shortcuts ---
-        document.addEventListener('keydown', (event) => {
-            // Prevent default browser behavior for spacebar (scrolling)
-            if (event.code === 'Space' && event.target.tagName !== 'INPUT' && event.target.tagName !== 'SELECT') {
-                event.preventDefault();
-                 if (playPauseButton) { // Check if button exists
-                    playPauseButton.click();
-                 }
-            }
-
-            // Volume up/down with arrow keys
-            if (event.code === 'ArrowUp') {
-                event.preventDefault();
-                 if (volumeSlider) { // Check if element exists
-                    volumeSlider.value = Math.min(1, parseFloat(volumeSlider.value) + 0.05);
-                    volumeSlider.dispatchEvent(new Event('input')); // Trigger input event
-                 }
-            }
-
-            if (event.code === 'ArrowDown') {
-                event.preventDefault();
-                 if (volumeSlider) { // Check if element exists
-                    volumeSlider.value = Math.max(0, parseFloat(volumeSlider.value) - 0.05);
-                    volumeSlider.dispatchEvent(new Event('input')); // Trigger input event
-                 }
-            }
-        });
-
-        // --- Accessibility (ARIA attributes added in HTML) ---
-        // Ensure sufficient color contrast (handled by theme styles)
-        // Focus management for keyboard navigation (default browser behavior is often sufficient for simple controls)
-
-        // --- Performance Optimization ---
-        // Animation Frame used for visualizer
-        // Avoid complex calculations inside the animation loop
-        // Consider optimizing the visualizer drawing for performance (e.g., drawing fewer bars at lower resolutions)
-
-        // --- Compatibility ---
-        // Web Audio API support varies, but is good in modern browsers.
-        // Canvas/WebGL is widely supported.
-        // FLV.js would be needed for FLV/RTMP streams if not using a simple embed (not implemented here).
-
-        // --- Mobile Experience ---
-        // Responsive CSS is implemented.
-        // Touch gestures for controls (default button behavior).
-        // Full-screen mode for visualizer (requires separate implementation, e.g., using Fullscreen API).
-
-        // --- Advanced Features (Placeholders/Notes) ---
-
-        // Frequency Tuning: Requires streams that support changing frequency or selecting different streams for fine tuning.
-        // RELIABLE RDS Metadata Display: Requires compatible stream/API for metadata.
-        // Robust Scheduling: Requires a server-side component for reliable execution when the browser is closed.
-        // Advanced FLV/RTMP Integration (beyond simple iframe embed): Would use a library like FLV.js and handle buffering, error states, etc.
-        // Signal Strength Indicator: Could be simulated based on buffer state or network conditions (complex).
-        // Lighting Effects: More advanced effects could use WebGL shaders.
-        // Subtle Sound Effects: Play short audio files on button clicks, state changes, etc.
-
-        // --- Initial Setup ---
-        initAudio(); // Initialize audio with the default selected station
-        loadSchedule(); // Load saved schedule on startup
-        fetchAndDisplayRss(RSS_FEED_URL); // Load RSS feed on startup
-
-         // Basic documentation comment:
-         /*
-          SINTONIA Radio Player - Basic Implementation
-
-          Features Included:
-          - Premium Dark/Light UI with Blue Accents
-          - Responsive Design (Mobile-First)
-          - Multi-Station Selection (basic)
-          - Play/Pause Control
-          - Volume Control with Mute
-          - Basic Circular Audio Visualizer (Bar Mode)
-          - Basic Sleep Timer (with toggle icon)
-          - Basic Weekly Scheduler (with toggle icon - BROWSER-BASED, LIMITED RELIABILITY)
-          - Kick.com Embed Toggle (may be blocked by source site)
-          - News Link Button (replaces Favorites placeholder)
-          - Share Application Button (uses Web Share API or copies URL)
-          - Basic History (Last Station)
-          - Theme Toggle (Dark/Light)
-          - Toast Notifications
-          - Keyboard Shortcuts (Space, Arrow Up/Down)
-          - Accessibility (ARIA attributes, CSS contrast)
-          - Placeholder div for Metadata (sonic_title)
-          - Basic RSS Feed Reader (displays headlines from a specified URL)
-          - Footer with Copyright
-
-          Features Not Fully Implemented (Require more complex logic/backend):
-          - Fine Frequency Tuning
-          - RELIABLE RDS Metadata Display (requires compatible stream/API)
-          - RELIABLE Weekly Scheduler (requires server)
-          - Advanced FLV/RTMP Integration (beyond simple iframe embed)
-          - Signal Strength Indicator
-          - Advanced Lighting Effects
-          - Subtle Sound Effects for all interactions
-          - Multiple Visualizer Modes (only basic bar implemented)
-          - Full-screen Visualizer Mode
-          - Robust Error Handling for all scenarios
-          - Periodic RSS Feed Refresh
-
-          To Extend:
-          - Add more stations to the <select> element.
-          - Implement other visualizer modes in the drawVisualizer function.
-          - Enhance History using localStorage arrays.
-          - Implement a server-side component for reliable scheduling.
-          - If the station provides a metadata source (like a JSON API), you could add logic to fetch and display it in the 'sonic_title' div.
-          - Add subtle sound effects by playing short audio files.
-          - Implement full-screen mode using the Fullscreen API.
-          - Add automatic periodic refresh for the RSS feed (e.g., using setInterval).
-         */
+        }); // End of DOMContentLoaded
 
     </script>
 </body>
