@@ -20,6 +20,10 @@
             --border-radius: 15px;
             --padding: 20px;
             --transition-speed: 0.3s;
+            --gradient-start-dark: #0f1626; /* Darker blue for gradient start */
+            --gradient-end-dark: #1a2a40; /* Lighter blue for gradient end */
+             --gradient-start-light: #e0e0e0; /* Light grey for gradient start */
+            --gradient-end-light: #f8f8f8; /* Lighter grey for gradient end */
         }
 
         body {
@@ -143,20 +147,6 @@
              color: var(--text-light);
          }
 
-        /* Style for the new sonic_title div */
-        #sonic_title {
-            margin-top: 5px; /* Space below rds-info */
-            font-size: 1.2em;
-            font-weight: bold;
-            color: var(--accent-blue); /* Example color */
-            min-height: 1.2em; /* Reserve space */
-            transition: color var(--transition-speed);
-        }
-
-        body.light-theme #sonic_title {
-            color: var(--hover-blue); /* Example color in light theme */
-        }
-
 
         .controls {
             display: flex;
@@ -204,35 +194,63 @@
             flex-grow: 1;
             -webkit-appearance: none;
             appearance: none;
-            height: 8px;
-            background: var(--card-dark);
+            height: 10px; /* Slightly thicker track */
+            background: linear-gradient(to right, var(--gradient-start-dark), var(--gradient-end-dark)); /* Gradient background */
             outline: none;
             border-radius: 5px;
             cursor: pointer;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3); /* More pronounced inner shadow */
+            transition: background var(--transition-speed), box-shadow var(--transition-speed);
+             border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
         }
 
         .volume-control input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 24px; /* Slightly larger thumb */
+            height: 24px; /* Slightly larger thumb */
             background: var(--accent-blue);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 2px 5px var(--shadow-dark);
-            transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+            box-shadow: 0 3px 8px var(--shadow-dark); /* Enhanced shadow */
+            transition: background-color var(--transition-speed), box-shadow var(--transition-speed), transform 0.1s ease-in-out; /* Add transform transition */
+             border: 2px solid white; /* White border */
         }
 
+        .volume-control input[type="range"]::-webkit-slider-thumb:hover {
+            background-color: var(--hover-blue);
+            box-shadow: 0 4px 10px var(--shadow-dark);
+             transform: scale(1.1); /* Subtle scale on hover */
+        }
+
+         .volume-control input[type="range"]::-webkit-slider-thumb:active {
+            transform: scale(0.95); /* Subtle scale on active */
+             box-shadow: 0 2px 6px var(--shadow-dark);
+         }
+
+
         .volume-control input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
+            width: 24px; /* Slightly larger thumb */
+            height: 24px; /* Slightly larger thumb */
             background: var(--accent-blue);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 2px 5px var(--shadow-dark);
-            transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+            box-shadow: 0 3px 8px var(--shadow-dark); /* Enhanced shadow */
+            transition: background-color var(--transition-speed), box-shadow var(--transition-speed), transform 0.1s ease-in-out; /* Add transform transition */
+             border: 2px solid white; /* White border */
         }
+
+        .volume-control input[type="range"]::-moz-range-thumb:hover {
+            background-color: var(--hover-blue);
+            box-shadow: 0 4px 10px var(--shadow-dark);
+             transform: scale(1.1); /* Subtle scale on hover */
+        }
+
+         .volume-control input[type="range"]::-moz-range-thumb:active {
+            transform: scale(0.95); /* Subtle scale on active */
+             box-shadow: 0 2px 6px var(--shadow-dark);
+         }
+
 
         .volume-control .fas {
             font-size: 1.5em;
@@ -499,10 +517,44 @@
             color: var(--hover-blue);
         }
 
+        /* Light theme styles for volume slider */
         .light-theme .volume-control input[type="range"] {
-             background: var(--card-light);
-             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+             background: linear-gradient(to right, var(--gradient-start-light), var(--gradient-end-light)); /* Light gradient */
+             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle inner shadow */
+             border: 1px solid rgba(0, 0, 0, 0.1); /* Subtle border */
         }
+
+        .light-theme .volume-control input[type="range"]::-webkit-slider-thumb {
+             background: var(--accent-blue); /* Keep accent color for thumb */
+             box-shadow: 0 3px 8px var(--shadow-light); /* Light shadow */
+             border: 2px solid var(--text-light); /* Dark border in light theme */
+        }
+
+         .light-theme .volume-control input[type="range"]::-webkit-slider-thumb:hover {
+             background-color: var(--hover-blue);
+             box-shadow: 0 4px 10px var(--shadow-light);
+         }
+
+         .light-theme .volume-control input[type="range"]::-webkit-slider-thumb:active {
+             box-shadow: 0 2px 6px var(--shadow-light);
+         }
+
+
+        .light-theme .volume-control input[type="range"]::-moz-range-thumb {
+             background: var(--accent-blue); /* Keep accent color for thumb */
+             box-shadow: 0 3px 8px var(--shadow-light); /* Light shadow */
+             border: 2px solid var(--text-light); /* Dark border in light theme */
+        }
+
+         .light-theme .volume-control input[type="range"]::-moz-range-thumb:hover {
+             background-color: var(--hover-blue);
+             box-shadow: 0 4px 10px var(--shadow-light);
+         }
+
+         .light-theme .volume-control input[type="range"]::-moz-range-thumb:active {
+             box-shadow: 0 2px 6px var(--shadow-light);
+         }
+
 
          .light-theme .station-select select,
          .light-theme #sleepTimerControls input[type="number"],
@@ -703,9 +755,6 @@
         </div>
 
         <div id="rds-info">Información de la estación...</div>
-        <div id='sonic_title'></div>
-
-
         <div class="controls">
             <button class="control-button" id="playPauseButton" aria-label="Reproducir/Pausar">
                 <i class="fas fa-play"></i>
@@ -829,8 +878,8 @@
             const saveScheduleButton = document.getElementById('saveScheduleButton');
             const clearScheduleButton = document.getElementById('clearScheduleButton');
 
-            // Metadata div (placeholder)
-            const sonicTitleDiv = document.getElementById('sonic_title');
+            // Removed the sonicTitleDiv variable and updateSonicTitle function
+
 
             // Check if essential elements are found
             if (!playPauseButton || !volumeSlider || !stationsSelect || !visualizerCanvas || !rdsInfo || !toastContainer) {
@@ -901,7 +950,7 @@
                     rdsInfo.textContent = 'Reproduciendo...'; // Basic feedback
                     showToast('Reproduciendo...');
                     requestAnimationFrame(drawVisualizer); // Start visualization
-                    updateSonicTitle(''); // Clear metadata placeholder on play
+                    // Removed call to updateSonicTitle
                 };
 
                 audio.onpause = () => {
@@ -914,7 +963,7 @@
                     rdsInfo.textContent = 'Pausado'; // Basic feedback
                     showToast('Pausado');
                      cancelAnimationFrame(animationFrameId); // Stop visualization
-                     updateSonicTitle(''); // Clear metadata when paused
+                     // Removed call to updateSonicTitle
                 };
 
                 audio.onerror = (e) => {
@@ -927,21 +976,21 @@
                         playPauseIcon.classList.add('fa-play');
                      }
                      cancelAnimationFrame(animationFrameId); // Stop visualization
-                     updateSonicTitle('Error de reproducción'); // Indicate error in sonic_title
+                     // Removed call to updateSonicTitle
                 };
 
                 audio.onwaiting = () => {
                      console.log('Audio onwaiting event'); // Debugging
                      rdsInfo.textContent = 'Cargando...';
                      showToast('Cargando...');
-                     updateSonicTitle('Cargando...'); // Indicate loading in sonic_title
+                     // Removed call to updateSonicTitle
                 };
 
                  audio.onstalled = () => {
                      console.log('Audio onstalled event'); // Debugging
                      rdsInfo.textContent = 'Buffer vacío...';
                      showToast('Buffer vacío...');
-                     updateSonicTitle('Buffer vacío'); // Indicate buffer empty in sonic_title
+                     // Removed call to updateSonicTitle
                  };
 
                  audio.onplaying = () => {
@@ -950,22 +999,7 @@
                  };
             }
 
-            // --- Metadata Display (Placeholder) ---
-            function updateSonicTitle(text) {
-                if (sonicTitleDiv) { // Check if element exists
-                    sonicTitleDiv.textContent = text;
-                }
-            }
-
-            // ** IMPORTANT NOTE ON METADATA (RDS / Song Title): **
-            // Reading true RDS metadata directly from a web audio stream using client-side JavaScript
-            // is generally NOT possible. RDS is a broadcast standard, not a web streaming standard.
-            // Web streams (like MP3 or AAC streams) might embed metadata in different ways,
-            // often through Icecast/Shoutcast headers or separate APIs.
-
-            // The `sonic_title` div is ready to display metadata, but the function to *get*
-            // that metadata (`fetchAndDisplayMetadata` - hypothetical name) needs to be implemented
-            // based on a reliable source provided by the radio station.
+            // Removed Metadata Display function (updateSonicTitle)
 
 
             // --- RSS Feed Reader ---
@@ -1029,7 +1063,7 @@
                             const publishedElement = entry.querySelector('published');
                             // const summaryElement = entry.querySelector('summary'); // Optional: include summary
 
-                            const itemTitle = titleElement ? titleElement.textContent : 'Sin título';
+                            const itemTitle = titleElement ? titleTitle.textContent : 'Sin título';
                             const itemLink = linkElement ? linkElement.getAttribute('href') : '#';
                             const itemDate = publishedElement ? new Date(publishedElement.textContent).toLocaleDateString() : ''; // Format date
 
@@ -1081,7 +1115,6 @@
                             console.error("Playback failed:", e);
                             showToast('No se pudo iniciar la reproducción', 'error');
                              rdsInfo.textContent = 'Error de reproducción';
-                             updateSonicTitle('Error de reproducción');
                         });
                     }
                 });
@@ -1151,7 +1184,6 @@
                             console.error("Playback failed:", e);
                             showToast('No se pudo cambiar de estación', 'error');
                              rdsInfo.textContent = 'Error al cambiar de estación';
-                             updateSonicTitle('Error al cambiar de estación');
                         });
                     } else {
                          rdsInfo.textContent = 'Estación seleccionada: ' + stationsSelect.options[stationsSelect.selectedIndex].text;
@@ -1159,7 +1191,6 @@
                     }
                      // Save last played station (basic history)
                      localStorage.setItem('sintonia_last_station', stationsSelect.value);
-                     updateSonicTitle(''); // Clear metadata placeholder on station change
                 });
 
                  // Load last played station
@@ -1623,6 +1654,7 @@
                 themeToggle.addEventListener('click', () => {
                     console.log('Button click: themeToggle'); // Debugging
                     document.body.classList.toggle('light-theme');
+                    console.log('Body classList after toggle:', document.body.classList); // Debugging: Check class list
                     const isLightTheme = document.body.classList.contains('light-theme');
                      const iconElement = themeToggle.querySelector('i');
                      if (iconElement) { // Check if icon element exists
@@ -1746,7 +1778,7 @@
 
             // Frequency Tuning: Requires streams that support changing frequency or selecting different streams for fine tuning.
             // RELIABLE RDS Metadata Display: Requires compatible stream/API for metadata.
-            // Robust Scheduling: Requires a server-side component for reliable execution when the browser is closed.
+            // RELIABLE Weekly Scheduler: Requires a server-side component for reliable execution when the browser is closed.
             // Advanced FLV/RTMP Integration (beyond simple iframe embed): Would use a library like FLV.js and handle buffering, error states, etc.
             // Signal Strength Indicator: Could be simulated based on buffer state or network conditions (complex).
             // Lighting Effects: More advanced effects could use WebGL shaders.
@@ -1778,7 +1810,6 @@
               - Toast Notifications
               - Keyboard Shortcuts (Space, Arrow Up/Down)
               - Accessibility (ARIA attributes, CSS contrast)
-              - Placeholder div for Metadata (sonic_title)
               - Basic RSS Feed Reader (will likely be blocked by CORS)
               - Footer with Copyright
 
