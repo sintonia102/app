@@ -760,8 +760,10 @@
 
 
     <script>
+        console.log('Script started'); // Debugging: Script start marker
+
         const playPauseButton = document.getElementById('playPauseButton');
-        const playPauseIcon = playPauseButton.querySelector('i');
+        const playPauseIcon = playPauseButton ? playPauseButton.querySelector('i') : null; // Check if button exists
         const volumeSlider = document.getElementById('volumeSlider');
         const volumeIcon = document.getElementById('volumeIcon');
         const stationsSelect = document.getElementById('stations');
@@ -816,6 +818,7 @@
 
         // --- Audio Setup ---
         function initAudio() {
+            console.log('initAudio called'); // Debugging
             if (!audioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioContext.createAnalyser();
@@ -848,9 +851,12 @@
 
             // Event listeners for audio state
             audio.onplay = () => {
+                console.log('Audio onplay event'); // Debugging
                 isPlaying = true;
-                playPauseIcon.classList.remove('fa-play');
-                playPauseIcon.classList.add('fa-pause');
+                if (playPauseIcon) { // Check if icon element exists
+                    playPauseIcon.classList.remove('fa-play');
+                    playPauseIcon.classList.add('fa-pause');
+                }
                 rdsInfo.textContent = 'Reproduciendo...'; // Basic feedback
                 showToast('Reproduciendo...');
                 requestAnimationFrame(drawVisualizer); // Start visualization
@@ -858,9 +864,12 @@
             };
 
             audio.onpause = () => {
+                console.log('Audio onpause event'); // Debugging
                 isPlaying = false;
-                playPauseIcon.classList.remove('fa-pause');
-                playPauseIcon.classList.add('fa-play');
+                 if (playPauseIcon) { // Check if icon element exists
+                    playPauseIcon.classList.remove('fa-pause');
+                    playPauseIcon.classList.add('fa-play');
+                 }
                 rdsInfo.textContent = 'Pausado'; // Basic feedback
                 showToast('Pausado');
                  cancelAnimationFrame(animationFrameId); // Stop visualization
@@ -868,36 +877,43 @@
             };
 
             audio.onerror = (e) => {
-                console.error('Audio error:', e);
+                console.error('Audio error:', e); // Debugging
                 rdsInfo.textContent = 'Error al cargar la estación';
                 showToast('Error de reproducción', 'error');
                 isPlaying = false;
-                playPauseIcon.classList.remove('fa-pause');
-                playPauseIcon.classList.add('fa-play');
+                 if (playPauseIcon) { // Check if icon element exists
+                    playPauseIcon.classList.remove('fa-pause');
+                    playPauseIcon.classList.add('fa-play');
+                 }
                  cancelAnimationFrame(animationFrameId); // Stop visualization
                  updateSonicTitle('Error de reproducción'); // Indicate error in sonic_title
             };
 
             audio.onwaiting = () => {
+                 console.log('Audio onwaiting event'); // Debugging
                  rdsInfo.textContent = 'Cargando...';
                  showToast('Cargando...');
                  updateSonicTitle('Cargando...'); // Indicate loading in sonic_title
             };
 
              audio.onstalled = () => {
+                 console.log('Audio onstalled event'); // Debugging
                  rdsInfo.textContent = 'Buffer vacío...';
                  showToast('Buffer vacío...');
                  updateSonicTitle('Buffer vacío'); // Indicate buffer empty in sonic_title
              };
 
              audio.onplaying = () => {
+                 console.log('Audio onplaying event'); // Debugging
                  // rdsInfo.textContent = 'Reproduciendo'; // Keep more detailed feedback from onplay/metadata
              };
         }
 
         // --- Metadata Display (Placeholder) ---
         function updateSonicTitle(text) {
-            sonicTitleDiv.textContent = text;
+            if (sonicTitleDiv) { // Check if element exists
+                sonicTitleDiv.textContent = text;
+            }
         }
 
         // ** IMPORTANT NOTE ON METADATA (RDS / Song Title): **
@@ -915,35 +931,56 @@
         const RSS_FEED_URL = 'https://www.sintonia102.com/feeds/posts/default?alt=rss';
 
         async function fetchAndDisplayRss(feedUrl) {
-            rssTitle.textContent = 'Cargando noticias...';
-            rssItemsDiv.innerHTML = ''; // Clear previous items
+            console.log('Fetching RSS from:', feedUrl); // Debugging
+            if (rssTitle) { // Check if element exists
+                 rssTitle.textContent = 'Cargando noticias...';
+            }
+            if (rssItemsDiv) { // Check if element exists
+                rssItemsDiv.innerHTML = ''; // Clear previous items
+            } else {
+                 console.error('RSS items div not found'); // Debugging
+                 return; // Stop if container not found
+            }
+
 
             try {
                 const response = await fetch(feedUrl);
+                console.log('Fetch response status:', response.status); // Debugging
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const text = await response.text();
+                console.log('Fetch response text received'); // Debugging
 
                 // Parse the XML (Atom format in this case)
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(text, 'text/xml');
+                console.log('Parsed XML:', xmlDoc); // Debugging
 
                 // Check for parsing errors
-                if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
+                const parserError = xmlDoc.getElementsByTagName('parsererror');
+                if (parserError.length > 0) {
+                    console.error('XML Parsing Error:', parserError[0]); // Debugging
                     throw new Error('Error parsing RSS/Atom feed.');
                 }
+                console.log('XML parsed successfully'); // Debugging
+
 
                 // Get Feed Title
                 const feedTitleElement = xmlDoc.querySelector('feed > title');
-                if (feedTitleElement) {
+                if (feedTitleElement && rssTitle) { // Check if elements exist
                     rssTitle.textContent = feedTitleElement.textContent;
-                } else {
+                     console.log('Feed Title:', rssTitle.textContent); // Debugging
+                } else if (rssTitle) {
                     rssTitle.textContent = 'Noticias'; // Default title if not found
+                     console.log('Feed Title not found, using default:', rssTitle.textContent); // Debugging
                 }
+
 
                 // Get and display Feed Items (Entries in Atom)
                 const entries = xmlDoc.querySelectorAll('entry');
+                console.log('Number of entries found:', entries.length); // Debugging
+
                 if (entries.length > 0) {
                     entries.forEach(entry => {
                         const titleElement = entry.querySelector('title');
@@ -961,130 +998,162 @@
                             <a href="${itemLink}" target="_blank" rel="noopener noreferrer">${itemTitle}</a>
                             ${itemDate ? `<div class="rss-date">${itemDate}</div>` : ''}
                             `;
-                        rssItemsDiv.appendChild(itemDiv);
+                         if (rssItemsDiv) { // Check if element exists before appending
+                            rssItemsDiv.appendChild(itemDiv);
+                         }
+                         console.log('Added RSS item:', itemTitle); // Debugging
                     });
-                } else {
+                } else if (rssItemsDiv) { // Check if element exists
                     rssItemsDiv.innerHTML = '<div class="rss-item">No se encontraron noticias.</div>';
+                     console.log('No RSS entries found'); // Debugging
                 }
 
             } catch (error) {
-                console.error('Error fetching or parsing RSS feed:', error);
-                rssTitle.textContent = 'Error al cargar noticias';
-                rssItemsDiv.innerHTML = '<div class="rss-item">No se pudieron cargar las noticias. Esto podría deberse a un problema con el feed o a restricciones de CORS.</div>';
+                console.error('Error fetching or parsing RSS feed:', error); // Debugging
+                if (rssTitle) { // Check if element exists
+                    rssTitle.textContent = 'Error al cargar noticias';
+                }
+                 if (rssItemsDiv) { // Check if element exists
+                    rssItemsDiv.innerHTML = '<div class="rss-item">No se pudieron cargar las noticias. Esto podría deberse a un problema con el feed o a restricciones de CORS. Revisa la consola para más detalles.</div>';
+                 }
                 showToast('Error al cargar noticias.', 'error');
             }
         }
 
 
         // --- Play/Pause Control ---
-        playPauseButton.addEventListener('click', () => {
-            if (!audio) {
-                initAudio();
-            }
+        if (playPauseButton) { // Check if button exists
+            playPauseButton.addEventListener('click', () => {
+                console.log('Button click: playPauseButton'); // Debugging
+                if (!audio) {
+                    initAudio();
+                }
 
-            if (audioContext.state === 'suspended') {
-                 audioContext.resume(); // Resume context on user interaction
-            }
+                if (audioContext.state === 'suspended') {
+                     audioContext.resume(); // Resume context on user interaction
+                }
 
-            if (isPlaying) {
-                audio.pause();
-            } else {
-                audio.play().catch(e => {
-                    console.error("Playback failed:", e);
-                    showToast('No se pudo iniciar la reproducción', 'error');
-                     rdsInfo.textContent = 'Error de reproducción';
-                     updateSonicTitle('Error de reproducción');
-                });
-            }
-        });
+                if (isPlaying) {
+                    audio.pause();
+                } else {
+                    audio.play().catch(e => {
+                        console.error("Playback failed:", e);
+                        showToast('No se pudo iniciar la reproducción', 'error');
+                         rdsInfo.textContent = 'Error de reproducción';
+                         updateSonicTitle('Error de reproducción');
+                    });
+                }
+            });
+        } else {
+            console.error('Play/Pause button not found'); // Debugging
+        }
+
 
         // --- Volume Control ---
-        volumeSlider.addEventListener('input', () => {
-            if (gainNode) {
-                gainNode.gain.value = volumeSlider.value;
-                updateVolumeIcon(volumeSlider.value);
-            }
-             // Save volume preference (basic)
-             localStorage.setItem('sintonia_volume', volumeSlider.value);
-        });
-
-         // Load saved volume
-         const savedVolume = localStorage.getItem('sintonia_volume');
-         if (savedVolume !== null) {
-             volumeSlider.value = savedVolume;
-             if (gainNode) {
-                 gainNode.gain.value = savedVolume;
-             }
-             updateVolumeIcon(savedVolume);
-         } else {
-             updateVolumeIcon(volumeSlider.value); // Update icon for default value
-         }
-
-
-        volumeIcon.addEventListener('click', () => {
-            if (gainNode) {
-                if (gainNode.gain.value > 0) {
-                    gainNode.gain.value = 0; // Mute
-                    volumeSlider.value = 0;
-                    updateVolumeIcon(0);
-                    showToast('Silenciado');
-                } else {
-                    // Restore previous volume or default
-                    const previousVolume = localStorage.getItem('sintonia_volume') || 1;
-                    gainNode.gain.value = previousVolume;
-                    volumeSlider.value = previousVolume;
-                    updateVolumeIcon(previousVolume);
-                    showToast('Sonido activado');
+        if (volumeSlider) { // Check if element exists
+            volumeSlider.addEventListener('input', () => {
+                console.log('Volume slider input:', volumeSlider.value); // Debugging
+                if (gainNode) {
+                    gainNode.gain.value = volumeSlider.value;
+                    updateVolumeIcon(volumeSlider.value);
                 }
-                 localStorage.setItem('sintonia_volume', volumeSlider.value); // Save mute state (as volume 0)
-            }
-        });
+                 // Save volume preference (basic)
+                 localStorage.setItem('sintonia_volume', volumeSlider.value);
+            });
+
+             // Load saved volume
+             const savedVolume = localStorage.getItem('sintonia_volume');
+             if (savedVolume !== null) {
+                 volumeSlider.value = savedVolume;
+                 if (gainNode) {
+                     gainNode.gain.value = savedVolume;
+                 }
+             }
+        } else {
+             console.error('Volume slider not found'); // Debugging
+        }
+
+        if (volumeIcon) { // Check if element exists
+             volumeIcon.addEventListener('click', () => {
+                console.log('Button click: volumeIcon (Mute/Unmute)'); // Debugging
+                if (gainNode) {
+                    if (gainNode.gain.value > 0) {
+                        gainNode.gain.value = 0; // Mute
+                        if (volumeSlider) volumeSlider.value = 0; // Update slider
+                        updateVolumeIcon(0);
+                        showToast('Silenciado');
+                    } else {
+                        // Restore previous volume or default
+                        const previousVolume = localStorage.getItem('sintonia_volume') || 1;
+                        gainNode.gain.value = previousVolume;
+                         if (volumeSlider) volumeSlider.value = previousVolume; // Update slider
+                        updateVolumeIcon(previousVolume);
+                        showToast('Sonido activado');
+                    }
+                     if (volumeSlider) localStorage.setItem('sintonia_volume', volumeSlider.value); // Save mute state (as volume 0)
+                }
+            });
+            // Initial icon update based on loaded volume
+            updateVolumeIcon(volumeSlider ? volumeSlider.value : 1); // Use 1 if slider not found
+        } else {
+            console.error('Volume icon not found'); // Debugging
+        }
+
+
+        // --- Station Selection ---
+        if (stationsSelect) { // Check if element exists
+            stationsSelect.addEventListener('change', () => {
+                console.log('Station select change:', stationsSelect.value); // Debugging
+                initAudio(); // Initialize with the new stream URL
+                if (isPlaying) {
+                    audio.play().catch(e => {
+                        console.error("Playback failed:", e);
+                        showToast('No se pudo cambiar de estación', 'error');
+                         rdsInfo.textContent = 'Error al cambiar de estación';
+                         updateSonicTitle('Error al cambiar de estación');
+                    });
+                } else {
+                     rdsInfo.textContent = 'Estación seleccionada: ' + stationsSelect.options[stationsSelect.selectedIndex].text;
+                     showToast('Estación seleccionada');
+                }
+                 // Save last played station (basic history)
+                 localStorage.setItem('sintonia_last_station', stationsSelect.value);
+                 updateSonicTitle(''); // Clear metadata placeholder on station change
+            });
+
+             // Load last played station
+             const lastStation = localStorage.getItem('sintonia_last_station');
+             if (lastStation) {
+                 stationsSelect.value = lastStation;
+             }
+        } else {
+             console.error('Stations select not found'); // Debugging
+        }
+
 
         function updateVolumeIcon(volume) {
-            volumeIcon.classList.remove('fa-volume-mute', 'fa-volume-down', 'fa-volume-up');
-            if (volume == 0) {
-                volumeIcon.classList.add('fa-volume-mute');
-            } else if (volume < 0.5) {
-                volumeIcon.classList.add('fa-volume-down');
-            } else {
-                volumeIcon.classList.add('fa-volume-up');
+            if (volumeIcon) { // Check if element exists
+                volumeIcon.classList.remove('fa-volume-mute', 'fa-volume-down', 'fa-volume-up');
+                if (volume == 0) {
+                    volumeIcon.classList.add('fa-volume-mute');
+                } else if (volume < 0.5) {
+                    volumeIcon.classList.add('fa-volume-down');
+                } else {
+                    volumeIcon.classList.add('fa-volume-up');
+                }
             }
         }
 
-        // --- Station Selection ---
-        stationsSelect.addEventListener('change', () => {
-            initAudio(); // Initialize with the new stream URL
-            if (isPlaying) {
-                audio.play().catch(e => {
-                    console.error("Playback failed:", e);
-                    showToast('No se pudo cambiar de estación', 'error');
-                     rdsInfo.textContent = 'Error al cambiar de estación';
-                     updateSonicTitle('Error al cambiar de estación');
-                });
-            } else {
-                 rdsInfo.textContent = 'Estación seleccionada: ' + stationsSelect.options[stationsSelect.selectedIndex].text;
-                 showToast('Estación seleccionada');
-            }
-             // Save last played station (basic history)
-             localStorage.setItem('sintonia_last_station', stationsSelect.value);
-             updateSonicTitle(''); // Clear metadata placeholder on station change
-        });
-
-         // Load last played station
-         const lastStation = localStorage.getItem('sintonia_last_station');
-         if (lastStation) {
-             stationsSelect.value = lastStation;
-         }
-
-
         // --- Audio Visualization ---
-        const canvasCtx = visualizerCanvas.getContext('2d');
+        const canvasCtx = visualizerCanvas ? visualizerCanvas.getContext('2d') : null; // Check if canvas exists
         let dataArray; // Will be initialized in initAudio
 
         function resizeCanvas() {
-            const container = visualizerCanvas.parentElement;
-            visualizerCanvas.width = container.clientWidth;
-            visualizerCanvas.height = container.clientHeight;
+            if (visualizerCanvas) { // Check if canvas exists
+                const container = visualizerCanvas.parentElement;
+                visualizerCanvas.width = container.clientWidth;
+                visualizerCanvas.height = container.clientHeight;
+            }
         }
 
         window.addEventListener('resize', resizeCanvas);
@@ -1159,86 +1228,120 @@
         // Placeholder for Visualizer Mode Selection UI
 
         // --- Sleep Timer Toggle ---
-        toggleSleepTimerButton.addEventListener('click', () => {
-            isSleepTimerVisible = !isSleepTimerVisible;
-            if (isSleepTimerVisible) {
-                sleepTimerControls.style.display = 'flex'; // Use flex to maintain layout
-                showToast('Mostrando temporizador de apagado.');
-            } else {
-                sleepTimerControls.style.display = 'none';
-                showToast('Ocultando temporizador de apagado.');
-            }
-        });
+        if (toggleSleepTimerButton && sleepTimerControls) { // Check if elements exist
+            toggleSleepTimerButton.addEventListener('click', () => {
+                console.log('Button click: toggleSleepTimerButton'); // Debugging
+                isSleepTimerVisible = !isSleepTimerVisible;
+                if (isSleepTimerVisible) {
+                    sleepTimerControls.style.display = 'flex'; // Use flex to maintain layout
+                    showToast('Mostrando temporizador de apagado.');
+                } else {
+                    sleepTimerControls.style.display = 'none';
+                    showToast('Ocultando temporizador de apagado.');
+                }
+            });
+        } else {
+             console.error('Sleep timer toggle button or controls not found'); // Debugging
+        }
 
 
         // --- Sleep Timer Functionality ---
-        setSleepTimerButton.addEventListener('click', () => {
-            const minutes = parseInt(sleepTimerMinutesInput.value);
-            if (isNaN(minutes) || minutes <= 0) {
-                showToast('Por favor, introduce un número válido de minutos.', 'warning');
-                return;
-            }
-
-            if (sleepTimerTimeout) {
-                clearTimeout(sleepTimerTimeout);
-            }
-
-            // Set timeout in milliseconds
-            const milliseconds = minutes * 60 * 1000;
-            sleepTimerTimeout = setTimeout(() => {
-                if (audio && isPlaying) {
-                    audio.pause();
-                    showToast('Temporizador de apagado activado.', 'info');
+        if (setSleepTimerButton && sleepTimerMinutesInput && cancelSleepTimerButton) { // Check if elements exist
+            setSleepTimerButton.addEventListener('click', () => {
+                console.log('Button click: setSleepTimerButton'); // Debugging
+                const minutes = parseInt(sleepTimerMinutesInput.value);
+                if (isNaN(minutes) || minutes <= 0) {
+                    showToast('Por favor, introduce un número válido de minutos.', 'warning');
+                    return;
                 }
-                 sleepTimerTimeout = null; // Reset timeout ID
-                 cancelSleepTimerButton.style.display = 'none'; // Hide cancel button
-            }, milliseconds);
 
-            showToast(`Temporizador de apagado configurado para ${minutes} minutos.`);
-            cancelSleepTimerButton.style.display = 'inline-flex'; // Show cancel button, use inline-flex for button styling
-        });
+                if (sleepTimerTimeout) {
+                    clearTimeout(sleepTimerTimeout);
+                    console.log('Existing sleep timer cleared.'); // Debugging
+                }
 
-         cancelSleepTimerButton.addEventListener('click', () => {
-             if (sleepTimerTimeout) {
-                 clearTimeout(sleepTimerTimeout);
-                 sleepTimerTimeout = null;
-                 showToast('Temporizador de apagado cancelado.');
-                 cancelSleepTimerButton.style.display = 'none'; // Hide cancel button
-             }
-         });
+                // Set timeout in milliseconds
+                const milliseconds = minutes * 60 * 1000;
+                console.log(`Setting sleep timer for ${minutes} minutes (${milliseconds} ms).`); // Debugging
+                sleepTimerTimeout = setTimeout(() => {
+                    console.log('Sleep timer timeout triggered.'); // Debugging
+                    if (audio && isPlaying) {
+                        console.log('Pausing audio due to sleep timer.'); // Debugging
+                        audio.pause();
+                        showToast('Temporizador de apagado activado.', 'info');
+                    } else {
+                         console.log('Sleep timer triggered, but audio was not playing or audio object invalid.'); // Debugging
+                         if (!audio) console.error('Audio object invalid in sleep timer callback.'); // Debugging
+                         if (!isPlaying) console.log('Audio was not playing when sleep timer triggered.'); // Debugging
+                    }
+                     sleepTimerTimeout = null; // Reset timeout ID
+                     cancelSleepTimerButton.style.display = 'none'; // Hide cancel button
+                }, milliseconds);
+
+                showToast(`Temporizador de apagado configurado para ${minutes} minutos.`);
+                cancelSleepTimerButton.style.display = 'inline-flex'; // Show cancel button, use inline-flex for button styling
+            });
+
+             cancelSleepTimerButton.addEventListener('click', () => {
+                 console.log('Button click: cancelSleepTimerButton'); // Debugging
+                 if (sleepTimerTimeout) {
+                     clearTimeout(sleepTimerTimeout);
+                     sleepTimerTimeout = null;
+                     console.log('Sleep timer cancelled by user.'); // Debugging
+                     showToast('Temporizador de apagado cancelado.');
+                     cancelSleepTimerButton.style.display = 'none'; // Hide cancel button
+                 } else {
+                     console.log('Cancel sleep timer clicked, but no timer was active.'); // Debugging
+                 }
+             });
+        } else {
+            console.error('Sleep timer buttons or input not found'); // Debugging
+        }
 
 
         // --- Weekly Scheduler Toggle ---
-        toggleWeeklySchedulerButton.addEventListener('click', () => {
-            isWeeklySchedulerVisible = !isWeeklySchedulerVisible;
-            if (isWeeklySchedulerVisible) {
-                weeklySchedulerControls.style.display = 'flex'; // Use flex to maintain layout
-                showToast('Mostrando programador semanal.');
-            } else {
-                weeklySchedulerControls.style.display = 'none';
-                showToast('Ocultando programador semanal.');
-            }
-        });
+        if (toggleWeeklySchedulerButton && weeklySchedulerControls) { // Check if elements exist
+            toggleWeeklySchedulerButton.addEventListener('click', () => {
+                console.log('Button click: toggleWeeklySchedulerButton'); // Debugging
+                isWeeklySchedulerVisible = !isWeeklySchedulerVisible;
+                if (isWeeklySchedulerVisible) {
+                    weeklySchedulerControls.style.display = 'flex'; // Use flex to maintain layout
+                    showToast('Mostrando programador semanal.');
+                } else {
+                    weeklySchedulerControls.style.display = 'none';
+                    showToast('Ocultando programador semanal.');
+                }
+            });
+        } else {
+             console.error('Weekly scheduler toggle button or controls not found'); // Debugging
+        }
 
 
         // --- Weekly Scheduler Functionality ---
         function loadSchedule() {
+            console.log('loadSchedule called'); // Debugging
             const savedSchedule = localStorage.getItem('sintonia_schedule');
             if (savedSchedule) {
                 weeklySchedule = JSON.parse(savedSchedule);
+                console.log('Loaded schedule:', weeklySchedule); // Debugging
                 // Update UI based on loaded schedule
-                scheduleDayCheckboxes.forEach(checkbox => {
-                    checkbox.checked = weeklySchedule.some(s => s.day === parseInt(checkbox.value));
-                });
-                if (weeklySchedule.length > 0) {
-                    // Just load the time from the first schedule entry for simplicity
-                    scheduleTimeInput.value = weeklySchedule[0].time;
-                } else {
+                 if (scheduleDayCheckboxes) { // Check if elements exist
+                    scheduleDayCheckboxes.forEach(checkbox => {
+                        checkbox.checked = weeklySchedule.some(s => s.day === parseInt(checkbox.value));
+                    });
+                 }
+                 if (scheduleTimeInput && weeklySchedule.length > 0) { // Check if elements exist
+                     // Just load the time from the first schedule entry for simplicity
+                     scheduleTimeInput.value = weeklySchedule[0].time;
+                 } else if (scheduleTimeInput) {
                      scheduleTimeInput.value = '07:00'; // Default time
-                }
+                 }
             } else {
                 weeklySchedule = [];
-                 scheduleTimeInput.value = '07:00'; // Default time
+                console.log('No saved schedule found.'); // Debugging
+                 if (scheduleTimeInput) { // Check if element exists
+                    scheduleTimeInput.value = '07:00'; // Default time
+                 }
             }
              // Start checking schedule if any exists
              if (weeklySchedule.length > 0 && !scheduleCheckInterval) {
@@ -1247,19 +1350,22 @@
         }
 
         function saveSchedule() {
-            const selectedDays = Array.from(scheduleDayCheckboxes)
+            console.log('Button click: saveScheduleButton'); // Debugging
+            const selectedDays = Array.from(scheduleDayCheckboxes || []) // Use empty array if checkboxes not found
                 .filter(checkbox => checkbox.checked)
                 .map(checkbox => parseInt(checkbox.value));
-            const selectedTime = scheduleTimeInput.value;
+            const selectedTime = scheduleTimeInput ? scheduleTimeInput.value : '07:00'; // Use default if input not found
 
             if (selectedDays.length === 0) {
                 showToast('Selecciona al menos un día para programar.', 'warning');
+                console.warn('Save schedule clicked, but no days selected.'); // Debugging
                 return;
             }
 
             weeklySchedule = selectedDays.map(day => ({ day: day, time: selectedTime }));
             localStorage.setItem('sintonia_schedule', JSON.stringify(weeklySchedule));
             showToast('Programación guardada.');
+            console.log('Schedule saved:', weeklySchedule); // Debugging
 
             // Start or restart schedule check
             stopScheduleCheck();
@@ -1267,142 +1373,199 @@
         }
 
         function clearSchedule() {
+            console.log('Button click: clearScheduleButton'); // Debugging
             localStorage.removeItem('sintonia_schedule');
             weeklySchedule = [];
-            scheduleDayCheckboxes.forEach(checkbox => checkbox.checked = false);
-            scheduleTimeInput.value = '07:00';
+            if (scheduleDayCheckboxes) { // Check if elements exist
+                scheduleDayCheckboxes.forEach(checkbox => checkbox.checked = false);
+            }
+             if (scheduleTimeInput) { // Check if element exists
+                scheduleTimeInput.value = '07:00';
+             }
             showToast('Programación limpiada.');
+            console.log('Schedule cleared.'); // Debugging
             stopScheduleCheck();
         }
 
         function startScheduleCheck() {
-             if (weeklySchedule.length === 0) return;
+             console.log('startScheduleCheck called'); // Debugging
+             if (weeklySchedule.length === 0) {
+                 console.log('No schedule to check, interval not started.'); // Debugging
+                 return;
+             }
+             if (scheduleCheckInterval) {
+                 console.log('Schedule check interval already running.'); // Debugging
+                 return; // Prevent multiple intervals
+             }
+
 
              // Check every minute
              scheduleCheckInterval = setInterval(() => {
+                 console.log('Checking schedule...'); // Debugging
                  const now = new Date();
                  const currentDay = now.getDay(); // Sunday is 0, Monday is 1, ..., Saturday is 6
                  const currentTime = now.toTimeString().slice(0, 5); // Get HH:MM format
+                 console.log(`Current Day: ${currentDay}, Current Time: ${currentTime}`); // Debugging
 
                  const shouldPlay = weeklySchedule.some(schedule => {
+                     console.log(`Comparing current ${currentDay}:${currentTime} with scheduled ${schedule.day}:${schedule.time}`); // Debugging
                      return schedule.day === currentDay && schedule.time === currentTime;
                  });
 
-                 // Simple logic: if it's scheduled time and not already playing, start playing
-                 // Add a flag to prevent triggering multiple times in the same minute
-                 // This basic implementation doesn't handle "play for X minutes" or complex scenarios
                  if (shouldPlay && !isPlaying) {
-                     console.log(`Scheduled playback triggered for Day ${currentDay} at ${currentTime}`);
+                     console.log(`Scheduled playback triggered for Day ${currentDay} at ${currentTime}`); // Debugging
                      // Trigger playback
                      if (!audio) {
+                        console.log('Initializing audio for scheduled playback.'); // Debugging
                         initAudio();
                      }
-                     if (audioContext.state === 'suspended') {
+                     if (audioContext && audioContext.state === 'suspended') { // Check if context exists
+                         console.log('Resuming audio context for scheduled playback.'); // Debugging
                          audioContext.resume();
                      }
-                     audio.play().catch(e => {
-                         console.error("Scheduled playback failed:", e);
-                         showToast('Error al iniciar la reproducción programada', 'error');
-                     });
-                      showToast('Iniciando reproducción programada.');
+                      if (audio) { // Check if audio exists
+                        console.log('Attempting audio play for scheduled playback.'); // Debugging
+                        audio.play().catch(e => {
+                            console.error("Scheduled playback failed:", e);
+                            showToast('Error al iniciar la reproducción programada', 'error');
+                        });
+                         showToast('Iniciando reproducción programada.');
+                      } else {
+                          console.error('Audio object not initialized for scheduled playback'); // Debugging
+                      }
+                 } else {
+                     console.log('No scheduled playback at this time or already playing.'); // Debugging
                  }
              }, 60 * 1000); // Check every minute
-
-             console.log('Schedule check started.');
+             console.log('Schedule check interval started.'); // Debugging
         }
 
         function stopScheduleCheck() {
+            console.log('stopScheduleCheck called'); // Debugging
             if (scheduleCheckInterval) {
                 clearInterval(scheduleCheckInterval);
                 scheduleCheckInterval = null;
-                console.log('Schedule check stopped.');
+                console.log('Schedule check stopped.'); // Debugging
+            } else {
+                 console.log('No schedule check interval was running.'); // Debugging
             }
         }
 
+        if (saveScheduleButton) { // Check if button exists
+            saveScheduleButton.addEventListener('click', saveSchedule);
+        } else {
+            console.error('Save schedule button not found'); // Debugging
+        }
 
-        saveScheduleButton.addEventListener('click', saveSchedule);
-        clearScheduleButton.addEventListener('click', clearSchedule);
+        if (clearScheduleButton) { // Check if button exists
+            clearScheduleButton.addEventListener('click', clearSchedule);
+        } else {
+            console.error('Clear schedule button not found'); // Debugging
+        }
 
 
         // --- Kick.com Embed Toggle ---
-        toggleKickButton.addEventListener('click', () => {
-            isKickEmbedVisible = !isKickEmbedVisible;
-            if (isKickEmbedVisible) {
-                kickEmbedContainer.style.display = 'block';
-                 showToast('Intentando cargar transmisión en vivo...');
-                 // Inform the user that it might be blocked
-                 setTimeout(() => {
-                     // This check is not foolproof due to cross-origin limitations,
-                     // but it's a basic attempt. The primary indicator will be the 'connection refused' error in console.
-                     try {
-                         const iframe = kickEmbedContainer.querySelector('iframe');
-                         // Attempt to check if the iframe has content loaded.
-                         // Accessing contentDocument or contentWindow can throw errors if blocked by CORS.
-                         // A simple check for the existence of contentWindow is a weak indicator.
-                         // The most reliable way to know if it's blocked is the browser's console error.
-                         if (iframe && iframe.contentWindow) {
-                             // We can't reliably check loaded state cross-origin,
-                             // so we'll just show the warning message regardless after a delay.
-                             showToast('La transmisión en vivo podría estar bloqueada por el sitio de origen.', 'warning');
-                             showToast('Considera abrirla en una nueva pestaña si no carga.', 'info', 4000);
-                         } else {
-                              // If contentWindow is null, it's likely blocked or not ready.
+        if (toggleKickButton && kickEmbedContainer) { // Check if elements exist
+            toggleKickButton.addEventListener('click', () => {
+                console.log('Button click: toggleKickButton'); // Debugging
+                isKickEmbedVisible = !isKickEmbedVisible;
+                if (isKickEmbedVisible) {
+                    kickEmbedContainer.style.display = 'block';
+                     showToast('Intentando cargar transmisión en vivo...');
+                     // Inform the user that it might be blocked
+                     setTimeout(() => {
+                         // This check is not foolproof due to cross-origin limitations,
+                         // but it's a basic attempt. The primary indicator will be the 'connection refused' error in console.
+                         try {
+                             const iframe = kickEmbedContainer.querySelector('iframe');
+                             // Attempt to check if the iframe has content loaded.
+                             // Accessing contentDocument or contentWindow can throw errors if blocked by CORS.
+                             // A simple check for the existence of contentWindow is a weak indicator.
+                             // The most reliable way to know if it's blocked is the browser's console error.
+                             if (iframe && iframe.contentWindow) {
+                                 // We can't reliably check loaded state cross-origin,
+                                 // so we'll just show the warning message regardless after a delay.
+                                 showToast('La transmisión en vivo podría estar bloqueada por el sitio de origen.', 'warning');
+                                 showToast('Considera abrirla en una nueva pestaña si no carga.', 'info', 4000);
+                             } else {
+                                  // If contentWindow is null, it's likely blocked or not ready.
+                                  showToast('La transmisión en vivo podría estar bloqueada por el sitio de origen.', 'warning');
+                                  showToast('Considera abrirla en una nueva pestaña si no carga.', 'info', 4000);
+                             }
+                         } catch (e) {
+                              // Catch any potential cross-origin errors during the check
+                              console.error('Cross-origin check error for Kick embed:', e); // Debugging
                               showToast('La transmisión en vivo podría estar bloqueada por el sitio de origen.', 'warning');
                               showToast('Considera abrirla en una nueva pestaña si no carga.', 'info', 4000);
                          }
-                     } catch (e) {
-                          // Catch any potential cross-origin errors during the check
-                          showToast('La transmisión en vivo podría estar bloqueada por el sitio de origen.', 'warning');
-                          showToast('Considera abrirla en una nueva pestaña si no carga.', 'info', 4000);
+                     }, 2000); // Give it a moment to attempt loading
+
+
+                } else {
+                    kickEmbedContainer.style.display = 'none';
+                     showToast('Ocultando transmisión en vivo.');
+                     // Optionally pause the iframe video when hidden
+                     const kickIframe = kickEmbedContainer.querySelector('iframe');
+                     if (kickIframe) {
+                         // This is tricky due to cross-origin policies.
+                         // A simple way might be to reload the iframe source when showing again,
+                         // or use the iframe's contentWindow.postMessage if the embed supports it.
+                         // For now, just hiding the container is the most reliable approach.
                      }
-                 }, 2000); // Give it a moment to attempt loading
+                }
+            });
+        } else {
+            console.error('Kick toggle button or container not found'); // Debugging
+        }
 
-
-            } else {
-                kickEmbedContainer.style.display = 'none';
-                 showToast('Ocultando transmisión en vivo.');
-                 // Optionally pause the iframe video when hidden
-                 const kickIframe = kickEmbedContainer.querySelector('iframe');
-                 if (kickIframe) {
-                     // This is tricky due to cross-origin policies.
-                     // A simple way might be to reload the iframe source when showing again,
-                     // or use the iframe's contentWindow.postMessage if the embed supports it.
-                     // For now, just hiding the container is the most reliable approach.
-                 }
-            }
-        });
 
         // --- News Link Button ---
-        newsLinkButton.addEventListener('click', () => {
-            // Open the news website in a new tab
-            window.open('https://www.sintonia102.com/', '_blank');
-            showToast('Abriendo web de noticias...');
-        });
+        if (newsLinkButton) { // Check if button exists
+            newsLinkButton.addEventListener('click', () => {
+                console.log('Button click: newsLinkButton'); // Debugging
+                // Open the news website in a new tab
+                window.open('https://www.sintonia102.com/', '_blank');
+                showToast('Abriendo web de noticias...');
+            });
+        } else {
+            console.error('News link button not found'); // Debugging
+        }
+
 
         // --- Share Button ---
-        shareButton.addEventListener('click', async () => {
-            const shareData = {
-                title: document.title,
-                url: window.location.href
-            };
+        if (shareButton) { // Check if button exists
+            shareButton.addEventListener('click', async () => {
+                console.log('Button click: shareButton'); // Debugging
+                const shareData = {
+                    title: document.title,
+                    url: window.location.href
+                };
 
-            try {
-                // Use the Web Share API if available
-                if (navigator.share) {
-                    await navigator.share(shareData);
-                    console.log('Application shared successfully');
-                    showToast('Aplicación compartida.');
-                } else {
-                    // Fallback: Copy URL to clipboard
-                    await navigator.clipboard.writeText(shareData.url);
-                    console.log('URL copied to clipboard');
-                    showToast('URL copiada al portapapeles.');
+                try {
+                    // Use the Web Share API if available
+                    if (navigator.share) {
+                        await navigator.share(shareData);
+                        console.log('Application shared successfully'); // Debugging
+                        showToast('Aplicación compartida.');
+                    } else {
+                        // Fallback: Copy URL to clipboard
+                         if (navigator.clipboard && navigator.clipboard.writeText) { // Check if clipboard API is available
+                            await navigator.clipboard.writeText(shareData.url);
+                            console.log('URL copied to clipboard'); // Debugging
+                            showToast('URL copiada al portapapeles.');
+                         } else {
+                             console.warn('Clipboard API not available, could not copy URL.'); // Debugging
+                             showToast('No se pudo copiar la URL. Copia la dirección de la barra de direcciones.', 'warning');
+                         }
+                    }
+                } catch (err) {
+                    console.error('Error sharing or copying:', err); // Debugging
+                    showToast('No se pudo compartir la aplicación.', 'error');
                 }
-            } catch (err) {
-                console.error('Error sharing or copying:', err);
-                showToast('No se pudo compartir la aplicación.', 'error');
-            }
-        });
+            });
+        } else {
+            console.error('Share button not found'); // Debugging
+        }
 
 
         // --- History (Basic Placeholder) ---
@@ -1411,37 +1574,58 @@
 
 
         // --- Theme Toggle ---
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('light-theme');
-            const isLightTheme = document.body.classList.contains('light-theme');
-            themeToggle.querySelector('i').classList.remove('fa-sun', 'fa-moon');
-            if (isLightTheme) {
-                themeToggle.querySelector('i').classList.add('fa-moon');
-                 showToast('Tema claro activado.');
-                 localStorage.setItem('sintonia_theme', 'light');
-            } else {
-                themeToggle.querySelector('i').classList.add('fa-sun');
-                 showToast('Tema oscuro activado.');
-                 localStorage.setItem('sintonia_theme', 'dark');
-            }
-        });
+        if (themeToggle) { // Check if button exists
+            themeToggle.addEventListener('click', () => {
+                console.log('Button click: themeToggle'); // Debugging
+                document.body.classList.toggle('light-theme');
+                const isLightTheme = document.body.classList.contains('light-theme');
+                 const iconElement = themeToggle.querySelector('i');
+                 if (iconElement) { // Check if icon element exists
+                    iconElement.classList.remove('fa-sun', 'fa-moon');
+                    if (isLightTheme) {
+                        iconElement.classList.add('fa-moon');
+                         showToast('Tema claro activado.');
+                         localStorage.setItem('sintonia_theme', 'light');
+                    } else {
+                        iconElement.classList.add('fa-sun');
+                         showToast('Tema oscuro activado.');
+                         localStorage.setItem('sintonia_theme', 'dark');
+                    }
+                 } else {
+                     console.error('Theme toggle icon not found'); // Debugging
+                 }
+            });
 
-        // Load saved theme
-        const savedTheme = localStorage.getItem('sintonia_theme');
-        if (savedTheme === 'light') {
-            document.body.classList.add('light-theme');
-             themeToggle.querySelector('i').classList.remove('fa-sun');
-             themeToggle.querySelector('i').classList.add('fa-moon');
+            // Load saved theme
+            const savedTheme = localStorage.getItem('sintonia_theme');
+            if (savedTheme === 'light') {
+                 document.body.classList.add('light-theme');
+                 const iconElement = themeToggle.querySelector('i');
+                 if (iconElement) { // Check if icon element exists
+                     iconElement.classList.remove('fa-sun');
+                     iconElement.classList.add('fa-moon');
+                 }
+            } else {
+                 // Default to dark theme if no preference or preference is 'dark'
+                 document.body.classList.remove('light-theme');
+                 const iconElement = themeToggle.querySelector('i');
+                 if (iconElement) { // Check if icon element exists
+                     iconElement.classList.remove('fa-moon');
+                     iconElement.classList.add('fa-sun');
+                 }
+            }
         } else {
-             // Default to dark theme if no preference or preference is 'dark'
-             document.body.classList.remove('light-theme');
-             themeToggle.querySelector('i').classList.remove('fa-moon');
-             themeToggle.querySelector('i').classList.add('fa-sun');
+            console.error('Theme toggle button not found'); // Debugging
         }
 
 
         // --- Toast Notification System ---
         function showToast(message, type = 'info', duration = 3000) {
+            console.log('Showing toast:', message); // Debugging
+            if (!toastContainer) {
+                 console.error('Toast container not found'); // Debugging
+                 return;
+            }
             const toast = document.createElement('div');
             toast.classList.add('toast');
             if (type === 'error') {
@@ -1471,20 +1655,26 @@
             // Prevent default browser behavior for spacebar (scrolling)
             if (event.code === 'Space' && event.target.tagName !== 'INPUT' && event.target.tagName !== 'SELECT') {
                 event.preventDefault();
-                playPauseButton.click();
+                 if (playPauseButton) { // Check if button exists
+                    playPauseButton.click();
+                 }
             }
 
             // Volume up/down with arrow keys
             if (event.code === 'ArrowUp') {
                 event.preventDefault();
-                volumeSlider.value = Math.min(1, parseFloat(volumeSlider.value) + 0.05);
-                 volumeSlider.dispatchEvent(new Event('input')); // Trigger input event
+                 if (volumeSlider) { // Check if element exists
+                    volumeSlider.value = Math.min(1, parseFloat(volumeSlider.value) + 0.05);
+                    volumeSlider.dispatchEvent(new Event('input')); // Trigger input event
+                 }
             }
 
             if (event.code === 'ArrowDown') {
                 event.preventDefault();
-                volumeSlider.value = Math.max(0, parseFloat(volumeSlider.value) - 0.05);
-                 volumeSlider.dispatchEvent(new Event('input')); // Trigger input event
+                 if (volumeSlider) { // Check if element exists
+                    volumeSlider.value = Math.max(0, parseFloat(volumeSlider.value) - 0.05);
+                    volumeSlider.dispatchEvent(new Event('input')); // Trigger input event
+                 }
             }
         });
 
@@ -1545,6 +1735,7 @@
           - Accessibility (ARIA attributes, CSS contrast)
           - Placeholder div for Metadata (sonic_title)
           - Basic RSS Feed Reader (displays headlines from a specified URL)
+          - Footer with Copyright
 
           Features Not Fully Implemented (Require more complex logic/backend):
           - Fine Frequency Tuning
