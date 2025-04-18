@@ -64,9 +64,16 @@
             background: none;
             border: none;
             color: var(--text-dark);
-            font-size: 1.5em;
+            font-size: 1.5em; /* Controls the icon size */
             cursor: pointer;
             transition: color var(--transition-speed);
+            /* Added size and centering for larger touch target */
+            width: 44px; /* Increased clickable area width */
+            height: 44px; /* Increased clickable area height */
+            display: flex; /* Use flexbox to center the icon */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            padding: 0; /* Remove default padding */
         }
 
         .theme-toggle:hover {
@@ -147,6 +154,29 @@
              color: var(--text-light);
          }
 
+        /* Style for the rotating info ticker */
+        #info-ticker {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: rgba(0, 123, 255, 0.1); /* Subtle background */
+            border-radius: 8px;
+            border: 1px solid rgba(0, 123, 255, 0.2);
+            color: var(--text-dark);
+            font-size: 1em;
+            min-height: 1.2em; /* Reserve space */
+            overflow: hidden; /* Hide overflowing text */
+            white-space: nowrap; /* Prevent text wrapping */
+            text-overflow: ellipsis; /* Add ellipsis for clipped text */
+            transition: opacity 0.5s ease-in-out; /* Fade transition */
+            text-align: center; /* Center the text */
+        }
+
+         body.light-theme #info-ticker {
+             background-color: rgba(0, 123, 255, 0.05);
+             border: 1px solid rgba(0, 123, 255, 0.1);
+             color: var(--text-light);
+         }
+
 
         .controls {
             display: flex;
@@ -154,6 +184,7 @@
             align-items: center;
             gap: 20px;
             margin-bottom: 20px;
+            margin-top: 20px; /* Add space above controls */
         }
 
         .control-button {
@@ -634,7 +665,6 @@
              #sintonia-text {
                  font-size: 1.2em;
              }
-             /* Removed RSS specific media query styles */
         }
 
         /* Footer styles */
@@ -668,6 +698,8 @@
         </div>
 
         <div id="rds-info">Información de la estación...</div>
+
+        <div id="info-ticker">Cargando mensajes...</div>
         <div class="controls">
             <button class="control-button" id="playPauseButton" aria-label="Reproducir/Pausar">
                 <i class="fas fa-play"></i>
@@ -766,6 +798,8 @@
             const toastContainer = document.getElementById('toastContainer');
             const newsLinkButton = document.getElementById('newsLinkButton');
             const shareButton = document.getElementById('shareButton');
+            const infoTicker = document.getElementById('info-ticker'); // Get the new info ticker element
+
 
             // RSS Reader elements (removed)
 
@@ -785,7 +819,7 @@
 
 
             // Check if essential elements are found
-            if (!playPauseButton || !volumeSlider || !stationsSelect || !visualizerCanvas || !rdsInfo || !toastContainer) {
+            if (!playPauseButton || !volumeSlider || !stationsSelect || !visualizerCanvas || !rdsInfo || !toastContainer || !infoTicker) {
                 console.error('Essential elements not found. Player may not function correctly.');
                 // Optionally display a user-friendly error message on the page
                 if (rdsInfo) rdsInfo.textContent = 'Error: Elementos esenciales del reproductor no encontrados.';
@@ -807,6 +841,18 @@
             let isWeeklySchedulerVisible = false; // New state variable
             let weeklySchedule = []; // Array to store schedule objects { day: number, time: string }
             let scheduleCheckInterval;
+
+            // --- Informational Titles for Ticker ---
+            const informationalTitles = [
+                "¡Bienvenido a Sintonia 102.5 FM!",
+                "Música, noticias y entretenimiento 24/7.",
+                "Síguenos en nuestras redes sociales.",
+                "Descarga nuestra app móvil.",
+                "Gracias por escucharnos."
+            ];
+            let currentTitleIndex = 0;
+            const titleDisplayDuration = 5000; // Duration each title is displayed (ms)
+            const titleFadeDuration = 500; // Duration of the fade transition (ms)
 
 
             // --- Audio Setup ---
@@ -1351,7 +1397,7 @@
 
 
             // --- Kick.com Embed Toggle ---
-            if (toggleKickButton && kickEmbedContainer) { // Check if elements exist
+            if (toggleKickButton && kickEmbedContainer) { // Check if elements exists
                 toggleKickButton.addEventListener('click', () => {
                     console.log('Button click: toggleKickButton'); // Debugging
                     isKickEmbedVisible = !isKickEmbedVisible;
@@ -1541,6 +1587,25 @@
                 }, duration);
             }
 
+            // --- Rotating Info Ticker Logic ---
+            function updateInfoTicker() {
+                if (!infoTicker) {
+                    console.error('Info ticker element not found.');
+                    return;
+                }
+
+                // Fade out the current text
+                infoTicker.style.opacity = 0;
+
+                // Wait for fade-out, then update text and fade in
+                setTimeout(() => {
+                    infoTicker.textContent = informationalTitles[currentTitleIndex];
+                    currentTitleIndex = (currentTitleIndex + 1) % informationalTitles.length; // Cycle through titles
+                    infoTicker.style.opacity = 1; // Fade in the new text
+                }, titleFadeDuration);
+            }
+
+
             // --- Keyboard Shortcuts ---
             document.addEventListener('keydown', (event) => {
                 // Prevent default browser behavior for spacebar (scrolling)
@@ -1603,6 +1668,12 @@
             loadSchedule(); // Load saved schedule on startup
             // Removed call to fetchAndDisplayRss
 
+            // Start the info ticker
+            if (infoTicker) { // Check if element exists before starting
+                 updateInfoTicker(); // Display the first title immediately
+                 setInterval(updateInfoTicker, titleDisplayDuration); // Start rotating titles
+            }
+
 
              // Basic documentation comment:
              /*
@@ -1625,6 +1696,7 @@
               - Toast Notifications
               - Keyboard Shortcuts (Space, Arrow Up/Down)
               - Accessibility (ARIA attributes, CSS contrast)
+              - Basic Rotating Informational Ticker (using predefined messages)
               - Footer with Copyright
 
               Features Not Fully Implemented (Require more complex logic/backend):
@@ -1638,6 +1710,7 @@
               - Multiple Visualizer Modes (only basic bar implemented)
               - Full-screen Visualizer Mode
               - Robust Error Handling for all scenarios
+              - Dynamically fetching external news/info for the ticker (requires server-side proxy or API)
 
               Limitations due to Browser Security / External Site Configuration:
               - RSS Feed Reader: Removed due to persistent CORS issues.
@@ -1646,12 +1719,14 @@
 
               To Extend:
               - Add more stations to the <select> element.
+              - Add/modify messages in the `informationalTitles` array.
               - Implement other visualizer modes in the drawVisualizer function.
               - Enhance History using localStorage arrays.
               - Implement a server-side component for reliable scheduling.
-              - If the station provides a metadata source (like a JSON API), you could add logic to fetch and display it in the 'sonic_title' div.
+              - If the station provides a metadata source (like a JSON API), you could add logic to fetch and display it in the 'rds-info' div.
               - Add subtle sound effects by playing short audio files.
               - Implement full-screen mode using the Fullscreen API.
+              - If you have a server, you could create an endpoint to fetch the RSS feed and serve it to your app, allowing dynamic news in the ticker.
              */
 
         }); // End of DOMContentLoaded
