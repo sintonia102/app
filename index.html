@@ -8,22 +8,22 @@
     <style>
         :root {
             --background-dark: #1a1a2e;
-            --background-light: #f0f0f0;
+            /* --background-light: #f0f0f0; */ /* Removed light theme variable */
             --card-dark: #16213e;
-            --card-light: #ffffff;
+            /* --card-light: #ffffff; */ /* Removed light theme variable */
             --text-dark: #e9e4f0;
-            --text-light: #333333;
+            /* --text-light: #333333; */ /* Removed light theme variable */
             --accent-blue: #007bff;
             --hover-blue: #0056b3;
             --shadow-dark: rgba(0, 0, 0, 0.5);
-            --shadow-light: rgba(0, 0, 0, 0.1);
+            /* --shadow-light: rgba(0, 0, 0, 0.1); */ /* Removed light theme variable */
             --border-radius: 15px;
             --padding: 20px;
             --transition-speed: 0.3s;
             --gradient-start-dark: #0f1626; /* Darker blue for gradient start */
             --gradient-end-dark: #1a2a40; /* Lighter blue for gradient end */
-             --gradient-start-light: #e0e0e0; /* Light grey for gradient start */
-            --gradient-end-light: #f8f8f8; /* Lighter grey for gradient end */
+            /* --gradient-start-light: #e0e0e0; */ /* Removed light theme variable */
+            /* --gradient-end-light: #f8f8f8; */ /* Removed light theme variable */
         }
 
         body {
@@ -35,18 +35,18 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: var(--background-dark);
-            color: var(--text-dark);
+            background-color: var(--background-dark); /* Default to dark background */
+            color: var(--text-dark); /* Default to dark text color */
             transition: background-color var(--transition-speed), color var(--transition-speed);
             overflow-x: hidden; /* Prevent horizontal scroll */
             padding-bottom: 40px; /* Add padding at the bottom for the footer */
         }
 
         .container {
-            background-color: var(--card-dark);
+            background-color: var(--card-dark); /* Default to dark card background */
             padding: var(--padding);
             border-radius: var(--border-radius);
-            box-shadow: 0 10px 30px var(--shadow-dark);
+            box-shadow: 0 10px 30px var(--shadow-dark); /* Default to dark shadow */
             text-align: center;
             width: 95%;
             max-width: 600px;
@@ -57,28 +57,7 @@
             margin-bottom: 20px; /* Add some space before the footer */
         }
 
-        .theme-toggle {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            color: var(--text-dark);
-            font-size: 1.5em; /* Controls the icon size */
-            cursor: pointer;
-            transition: color var(--transition-speed);
-            /* Added size and centering for larger touch target */
-            width: 44px; /* Increased clickable area width */
-            height: 44px; /* Increased clickable area height */
-            display: flex; /* Use flexbox to center the icon */
-            justify-content: center; /* Center horizontally */
-            align-items: center; /* Center vertically */
-            padding: 0; /* Remove default padding */
-        }
-
-        .theme-toggle:hover {
-            color: var(--accent-blue);
-        }
+        /* Removed .theme-toggle styles */
 
         .visualizer-container {
             position: relative;
@@ -122,10 +101,7 @@
             100% { color: hsl(240, 100%, 70%); } /* Example: Purple-like color */
         }
 
-         body.light-theme #sintonia-text {
-             color: var(--text-light); /* Override default color in light theme */
-             animation: none; /* Disable animation in light theme if preferred, or define a different one */
-         }
+         /* Removed body.light-theme #sintonia-text */
 
         #sintonia-text span {
             color: #ffffff; /* Highlight color */
@@ -150,9 +126,7 @@
             transition: color var(--transition-speed);
         }
 
-         body.light-theme #rds-info {
-             color: var(--text-light);
-         }
+         /* Removed body.light-theme #rds-info */
 
         /* Style for the rotating info ticker */
         #info-ticker {
@@ -171,11 +145,7 @@
             text-align: center; /* Center the text */
         }
 
-         body.light-theme #info-ticker {
-             background-color: rgba(0, 123, 255, 0.05);
-             border: 1px solid rgba(0, 123, 255, 0.1);
-             color: var(--text-light);
-         }
+         /* Removed body.light-theme #info-ticker */
 
 
         .controls {
@@ -529,75 +499,7 @@
             opacity: 1;
         }
 
-        /* Light Theme */
-        body.light-theme {
-            background-color: var(--background-light);
-            color: var(--text-light);
-        }
-
-        .light-theme .container {
-            background-color: var(--card-light);
-            box-shadow: 0 10px 30px var(--shadow-light);
-        }
-
-        .light-theme .theme-toggle {
-            color: var(--text-light);
-        }
-
-        .light-theme .theme-toggle:hover {
-            color: var(--hover-blue);
-        }
-
-        /* Light theme styles for volume slider */
-        .light-theme .volume-control input[type="range"] {
-             background: linear-gradient(to right, var(--gradient-start-light), var(--gradient-end-light)); /* Light gradient */
-             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle inner shadow */
-             border: 1px solid rgba(0, 0, 0, 0.1); /* Subtle border */
-        }
-
-        .light-theme .volume-control input[type="range"]::-webkit-slider-thumb {
-             background: var(--accent-blue); /* Keep accent color for thumb */
-             box-shadow: 0 3px 8px var(--shadow-light); /* Light shadow */
-             border: 2px solid var(--text-light); /* Dark border in light theme */
-        }
-
-         .light-theme .volume-control input[type="range"]::-webkit-slider-thumb:hover {
-             background-color: var(--hover-blue);
-             box-shadow: 0 4px 10px var(--shadow-light);
-         }
-
-         .light-theme .volume-control input[type="range"]::-webkit-slider-thumb:active {
-             box-shadow: 0 2px 6px var(--shadow-light);
-         }
-
-
-        .light-theme .volume-control input[type="range"]::-moz-range-thumb {
-             background: var(--accent-blue); /* Keep accent color for thumb */
-             box-shadow: 0 3px 8px var(--shadow-light); /* Light shadow */
-             border: 2px solid var(--text-light); /* Dark border in light theme */
-        }
-
-         .light-theme .volume-control input[type="range"]::-moz-range-thumb:hover {
-             background-color: var(--hover-blue);
-             box-shadow: 0 4px 10px var(--shadow-light);
-         }
-
-         .light-theme .volume-control input[type="range"]::-moz-range-thumb:active {
-             box-shadow: 0 2px 6px var(--shadow-light);
-         }
-
-
-         .light-theme .station-select select,
-         .light-theme #sleepTimerControls input[type="number"],
-         .light-theme #weeklySchedulerControls input[type="time"] {
-            background-color: var(--card-light);
-            color: var(--text-light);
-            border-color: var(--hover-blue);
-         }
-
-         .light-theme .kick-embed-container {
-             box-shadow: 5px 5px 15px var(--shadow-light);
-         }
+        /* Removed Light Theme styles */
 
 
         /* Responsive adjustments */
@@ -679,19 +581,12 @@
             /* border-top: 1px solid rgba(255, 255, 255, 0.1); */
         }
 
-        body.light-theme .footer {
-            color: rgba(51, 51, 51, 0.6);
-             /* Optional: Add a subtle border top */
-             /* border-top: 1px solid rgba(51, 51, 51, 0.1); */
-        }
+        /* Removed body.light-theme .footer */
 
     </style>
 </head>
 <body>
     <div class="container">
-        <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema oscuro/claro">
-            <i class="fas fa-sun"></i>
-        </button>
         <div class="visualizer-container">
             <canvas id="visualizerCanvas"></canvas>
             <div id="sintonia-text">SINTONIA <span>102.5 FM</span></div>
@@ -792,7 +687,7 @@
             const sleepTimerMinutesInput = document.getElementById('sleepTimerMinutes');
             const setSleepTimerButton = document.getElementById('setSleepTimerButton');
             const cancelSleepTimerButton = document.getElementById('cancelSleepTimerButton');
-            const themeToggle = document.getElementById('themeToggle');
+            // Removed themeToggle element reference
             const kickEmbedContainer = document.getElementById('kickEmbedContainer');
             const toggleKickButton = document.getElementById('toggleKickButton');
             const toastContainer = document.getElementById('toastContainer');
@@ -824,7 +719,7 @@
                 // Optionally display a user-friendly error message on the page
                 if (rdsInfo) rdsInfo.textContent = 'Error: Elementos esenciales del reproductor no encontrados.';
                  showToast('Error al iniciar el reproductor. Elementos no encontrados.', 'error');
-                 return; // Stop script execution if essential elements are missing
+                 return; // Stop script execution if essential elements is missing
             }
 
             // Initialize variables after elements are confirmed to exist
@@ -1510,61 +1405,7 @@
 
 
             // --- Theme Toggle ---
-            if (themeToggle) { // Check if button exists
-                // Function to handle theme toggle logic
-                const handleThemeToggle = (event) => {
-                     // Prevent default touch behavior that might interfere with click
-                     if (event.type === 'touchend') {
-                         event.preventDefault();
-                     }
-
-                    console.log('Theme toggle activated by:', event.type); // Debugging: Log event type
-                    document.body.classList.toggle('light-theme');
-                    console.log('Body classList after toggle:', document.body.classList); // Debugging: Check class list
-                    const isLightTheme = document.body.classList.contains('light-theme');
-                     const iconElement = themeToggle.querySelector('i');
-                     if (iconElement) { // Check if icon element exists
-                        iconElement.classList.remove('fa-sun', 'fa-moon');
-                        if (isLightTheme) {
-                            iconElement.classList.add('fa-moon');
-                             showToast('Tema claro activado.');
-                             localStorage.setItem('sintonia_theme', 'light');
-                        } else {
-                            iconElement.classList.add('fa-sun');
-                             showToast('Tema oscuro activado.');
-                             localStorage.setItem('sintonia_theme', 'dark');
-                        }
-                     } else {
-                         console.error('Theme toggle icon not found'); // Debugging
-                     }
-                };
-
-                // Add both click and touchend listeners
-                themeToggle.addEventListener('click', handleThemeToggle);
-                themeToggle.addEventListener('touchend', handleThemeToggle); // Added touchend listener
-
-
-                // Load saved theme on initial load
-                const savedTheme = localStorage.getItem('sintonia_theme');
-                if (savedTheme === 'light') {
-                     document.body.classList.add('light-theme');
-                     const iconElement = themeToggle.querySelector('i');
-                     if (iconElement) { // Check if icon element exists
-                         iconElement.classList.remove('fa-sun');
-                         iconElement.classList.add('fa-moon');
-                     }
-                } else {
-                     // Default to dark theme if no preference or preference is 'dark'
-                     document.body.classList.remove('light-theme');
-                     const iconElement = themeToggle.querySelector('i');
-                     if (iconElement) { // Check if icon element exists
-                         iconElement.classList.remove('fa-moon');
-                         iconElement.classList.add('fa-sun');
-                     }
-                }
-            } else {
-                console.error('Theme toggle button not found'); // Debugging
-            }
+            // Removed theme toggle logic and event listeners
 
 
             // --- Toast Notification System ---
@@ -1691,7 +1532,7 @@
               SINTONIA Radio Player - Basic Implementation
 
               Features Included:
-              - Premium Dark/Light UI with Blue Accents
+              - Premium Dark UI with Blue Accents (Light theme removed)
               - Responsive Design (Mobile-First)
               - Multi-Station Selection (basic)
               - Play/Pause Control
@@ -1703,7 +1544,6 @@
               - News Link Button (replaces Favorites placeholder)
               - Share Application Button (uses Web Share API or copies URL with custom text)
               - Basic History (Last Station)
-              - Theme Toggle (Dark/Light) - Now includes touchend listener
               - Toast Notifications
               - Keyboard Shortcuts (Space, Arrow Up/Down)
               - Accessibility (ARIA attributes, CSS contrast)
