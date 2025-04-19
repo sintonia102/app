@@ -667,7 +667,7 @@
 <body>
     <div class="container">
         <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema oscuro/claro">
-            <i class="fas fa-sun"></i>
+            <i class="far fa-sun"></i>
         </button>
         <div class="visualizer-container">
             <canvas id="visualizerCanvas"></canvas>
@@ -679,29 +679,29 @@
         <div id="info-ticker">Cargando mensajes...</div>
         <div class="controls">
             <button class="control-button" id="playPauseButton" aria-label="Reproducir/Pausar">
-                <i class="fas fa-play"></i>
+                <i class="far fa-play"></i>
             </button>
              <button class="control-button" id="toggleKickButton" aria-label="Mostrar/Ocultar transmisión en vivo">
-                <i class="fas fa-video"></i>
+                <i class="far fa-video"></i>
             </button>
             <button class="control-button" id="newsLinkButton" aria-label="Ir a la web de noticias">
-                <i class="fas fa-newspaper"></i>
+                <i class="far fa-newspaper"></i>
             </button>
              <button class="sleep-timer-toggle-button" id="toggleSleepTimerButton" aria-label="Mostrar/Ocultar temporizador de apagado">
-                <i class="fas fa-clock"></i>
+                <i class="far fa-clock"></i>
             </button>
              <button class="weekly-scheduler-toggle-button" id="toggleWeeklySchedulerButton" aria-label="Mostrar/Ocultar programador semanal">
-                 <i class="fas fa-calendar-alt"></i>
+                 <i class="far fa-calendar"></i>
              </button>
              <button class="control-button" id="shareButton" aria-label="Compartir aplicación">
-                 <i class="fas fa-share-alt"></i>
+                 <i class="far fa-share-alt"></i>
              </button>
         </div>
 
         <div class="volume-control">
-            <i class="fas fa-volume-down" id="volumeIcon"></i>
+            <i class="far fa-volume-down" id="volumeIcon"></i>
             <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" aria-label="Control de volumen">
-            <i class="fas fa-volume-up"></i>
+            <i class="far fa-volume-up"></i>
         </div>
 
         <div class="station-select">
@@ -715,8 +715,8 @@
         <div id="sleepTimerControls">
             <label for="sleepTimerMinutes">Apagado en (minutos):</label>
             <input type="number" id="sleepTimerMinutes" min="1" value="30" aria-label="Configurar temporizador de apagado">
-            <button id="setSleepTimerButton" aria-label="Configurar temporizador"><i class="fas fa-clock"></i></button>
-            <button id="cancelSleepTimerButton" style="display: none;" aria-label="Cancelar temporizador"><i class="fas fa-times"></i></button>
+            <button id="setSleepTimerButton" aria-label="Configurar temporizador"><i class="far fa-clock"></i></button>
+            <button id="cancelSleepTimerButton" style="display: none;" aria-label="Cancelar temporizador"><i class="far fa-times"></i></button>
         </div>
 
          <div id="weeklySchedulerControls">
@@ -1390,7 +1390,6 @@
                                  // Attempt to check if the iframe has content loaded.
                                  // Accessing contentDocument or contentWindow can throw errors if blocked by CORS.
                                  // A simple check for the existence of contentWindow is a weak indicator.
-                                 // The most reliable way to know if it's blocked is the browser's console error.
                                  if (iframe && iframe.contentWindow) {
                                      // We can't reliably check loaded state cross-origin,
                                      // so we'll just show the warning message regardless after a delay.
@@ -1504,12 +1503,13 @@
                      const iconElement = themeToggle.querySelector('i');
                      if (iconElement) { // Check if icon element exists
                         iconElement.classList.remove('fa-sun', 'fa-moon');
+                        // Use 'far' prefix for theme toggle icons
                         if (isLightTheme) {
-                            iconElement.classList.add('fa-moon');
+                            iconElement.classList.add('far', 'fa-moon'); // Light theme shows moon (to switch to dark)
                              showToast('Tema claro activado.');
                              localStorage.setItem('sintonia_theme', 'light');
                         } else {
-                            iconElement.classList.add('fa-sun');
+                            iconElement.classList.add('far', 'fa-sun'); // Dark theme shows sun (to switch to light)
                              showToast('Tema oscuro activado.');
                              localStorage.setItem('sintonia_theme', 'dark');
                         }
@@ -1525,22 +1525,21 @@
 
                 // Load saved theme on initial load
                 const savedTheme = localStorage.getItem('sintonia_theme');
-                if (savedTheme === 'light') {
-                     document.body.classList.add('light-theme');
-                     const iconElement = themeToggle.querySelector('i');
-                     if (iconElement) { // Check if icon element exists
-                         iconElement.classList.remove('fa-sun');
-                         iconElement.classList.add('fa-moon');
-                     }
+                const iconElement = themeToggle.querySelector('i'); // Get icon element once
+                if (iconElement) { // Check if icon element exists
+                    iconElement.classList.remove('fa-sun', 'fa-moon', 'fas', 'far'); // Remove all potential icon classes
+                    if (savedTheme === 'light') {
+                         document.body.classList.add('light-theme');
+                         iconElement.classList.add('far', 'fa-moon'); // Light theme shows moon (to switch to dark)
+                    } else {
+                         // Default to dark theme if no preference or preference is 'dark'
+                         document.body.classList.remove('light-theme');
+                         iconElement.classList.add('far', 'fa-sun'); // Dark theme shows sun (to switch to light)
+                    }
                 } else {
-                     // Default to dark theme if no preference or preference is 'dark'
-                     document.body.classList.remove('light-theme');
-                     const iconElement = themeToggle.querySelector('i');
-                     if (iconElement) { // Check if icon element exists
-                         iconElement.classList.remove('fa-moon');
-                         iconElement.classList.add('fa-sun');
-                     }
+                    console.error('Theme toggle icon not found on load'); // Debugging
                 }
+
             } else {
                 console.error('Theme toggle button not found'); // Debugging
             }
@@ -1631,7 +1630,7 @@
             // --- Performance Optimization ---
             // Animation Frame used for visualizer
             // Avoid complex calculations inside the animation loop
-            // Consider optimizing the visualizer drawing for performance (e.g., drawing fewer bars at lower resolutions)
+            // Consider optimizing the visualizer drawing for performance (e.e. drawing fewer bars at lower resolutions)
 
             // --- Compatibility ---
             // Web Audio API support varies, but is good in modern browsers.
@@ -1694,7 +1693,7 @@
               - Fine Frequency Tuning
               - RELIABLE RDS Metadata Display (requires compatible stream/API)
               - RELIABLE Weekly Scheduler (requires server)
-              - Advanced FLV/RTMP Integration (beyond simple iframe embed)
+              - Advanced FLV/RTMP Integration (beyond simple iframe embed): Would use a library like FLV.js and handle buffering, error states, etc.
               - Signal Strength Indicator: Could be simulated based on buffer state or network conditions (complex).
               - Lighting Effects: More advanced effects could use WebGL shaders.
               - Subtle Sound Effects: Play short audio files on button clicks, state changes, etc.
