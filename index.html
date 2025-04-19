@@ -417,35 +417,6 @@
             border-top: 1px solid rgba(0, 123, 255, 0.3); /* Separator line */
         }
 
-        .weekly-scheduler-toggle-button {
-             background-color: var(--accent-blue);
-            color: white;
-            border: none;
-            border-radius: 50%; /* Circular like other control buttons */
-            width: 45px; /* Slightly smaller than main controls */
-            height: 45px;
-            font-size: 1.5em; /* Adjust icon size */
-            cursor: pointer;
-            transition: background-color var(--transition-speed), transform var(--transition-speed), box-shadow var(--transition-speed);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 3px 10px var(--shadow-dark);
-            margin-bottom: 20px; /* Add margin below the toggle button */
-        }
-
-         .weekly-scheduler-toggle-button:hover {
-            background-color: var(--hover-blue);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 12px var(--shadow-dark);
-         }
-
-         .weekly-scheduler-toggle-button:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 8px var(--shadow-dark);
-         }
-
-
         #weeklySchedulerControls h3 {
             color: var(--accent-blue);
             margin-bottom: 10px;
@@ -1520,11 +1491,13 @@
                 // Function to handle theme toggle logic
                 const handleThemeToggle = (event) => {
                      // Prevent default touch behavior that might interfere with click
-                     if (event.type === 'touchend') {
-                         event.preventDefault();
-                     }
+                     // Added stopPropagation and stopImmediatePropagation for debugging
+                     event.stopPropagation();
+                     event.stopImmediatePropagation();
 
                     console.log('Theme toggle activated by:', event.type); // Debugging: Log event type
+                    console.log('Event target:', event.target); // Debugging: Log the element that received the event
+
                     document.body.classList.toggle('light-theme');
                     console.log('Body classList after toggle:', document.body.classList); // Debugging: Check class list
                     const isLightTheme = document.body.classList.contains('light-theme');
@@ -1674,7 +1647,7 @@
             // --- Advanced Features (Placeholders/Notes) ---
 
             // Frequency Tuning: Requires streams that support changing frequency or selecting different streams for fine tuning.
-            // RELIABLE RDS Metadata Display: Requires compatible stream/API for metadata.
+            // RELIABLE RDS Metadata Display (requires compatible stream/API)
             // RELIABLE Weekly Scheduler: Requires a server-side component for reliable execution when the browser is closed.
             // Advanced FLV/RTMP Integration (beyond simple iframe embed): Would use a library like FLV.js and handle buffering, error states, etc.
             // Signal Strength Indicator: Could be simulated based on buffer state or network conditions (complex).
@@ -1710,7 +1683,7 @@
               - News Link Button (replaces Favorites placeholder)
               - Share Application Button (uses Web Share API or copies URL with custom text)
               - Basic History (Last Station)
-              - Theme Toggle (Dark/Light) - Re-added with click and touchend listeners
+              - Theme Toggle (Dark/Light) - Re-added with click and touchend listeners, added debugging logs
               - Toast Notifications
               - Keyboard Shortcuts (Space, Arrow Up/Down)
               - Accessibility (ARIA attributes, CSS contrast)
