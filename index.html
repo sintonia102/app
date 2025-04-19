@@ -61,7 +61,7 @@
         .theme-toggle {
             position: absolute;
             top: 15px;
-            right: 15px;
+            left: 15px; /* Changed from right: 15px */
             background: none;
             border: none;
             color: var(--text-dark); /* Default color */
@@ -1722,13 +1722,9 @@
               - RELIABLE RDS Metadata Display (requires compatible stream/API)
               - RELIABLE Weekly Scheduler (requires server)
               - Advanced FLV/RTMP Integration (beyond simple iframe embed)
-              - Signal Strength Indicator
-              - Advanced Lighting Effects
-              - Subtle Sound Effects for all interactions
-              - Multiple Visualizer Modes (only basic bar implemented)
-              - Full-screen Visualizer Mode
-              - Robust Error Handling for all scenarios
-              - Dynamically fetching external news/info for the ticker (requires server-side proxy or API)
+              - Signal Strength Indicator: Could be simulated based on buffer state or network conditions (complex).
+              - Lighting Effects: More advanced effects could use WebGL shaders.
+              - Subtle Sound Effects: Play short audio files on button clicks, state changes, etc.
 
               Limitations due to Browser Security / External Site Configuration:
               - RSS Feed Reader: Removed due to persistent CORS issues.
