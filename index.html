@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sintonia App</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Sintonia App | Radio 102.5 FM Monte Maíz, Cba.</title> <meta name="description" content="Escucha Radio Sintonia 102.5 FM en vivo desde Monte Maíz, Córdoba, Argentina. Música, noticias y programación local las 24 horas."> <meta name="keywords" content="Radio Sintonia, 102.5 FM, Monte Maíz, Córdoba, Argentina, radio online, escuchar radio en vivo, música, noticias, programación local, reproductor web, accidente Monte Maíz, Bomberos Voluntarios, Policía, Municipalidad Monte Maíz"> <meta name="author" content="Sintonia"> <meta property="og:title" content="Sintonia App | Escucha Radio 102.5 FM en vivo"> <meta property="og:description" content="Escucha Radio Sintonia 102.5 FM en vivo desde Monte Maíz, Córdoba, Argentina. Música, noticias y programación local las 24 horas."> <meta property="og:type" content="website"> <meta property="og:url" content="https://sintonia102.com"> <meta property="og:image" content="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0clCrzsnnf9J91pdgIYlNyho_eI_KRQFXvjwWJiJx0k00V-JQIH0fUS8Soglghxi_xAsil2-2RdOnNg5FM99rqvGb3MN_EehDQ0nd7_wMPLysL0ScjLuKE_vyv4wypgalQPpaJ7oiSJaFEAlO85nKMeEPpGWTUAnFgweXV_cPXdJgo3IWM-wxQVcmPFY/s16000/SINTONIA%20102.5%20FM%20-%20MONTE%20MAIZ%20rep4.gif"> <link rel="canonical" href="https://sintonia102.github.io/app/"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --background-dark: #1a1a2e;
@@ -53,7 +52,7 @@
             transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
             position: relative;
             overflow: hidden;
-            margin-top: 20px;
+            /* margin-top: 20px; Removido para que el main controle el espacio */
             margin-bottom: 20px;
         }
 
@@ -697,86 +696,87 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema oscuro/claro">
-            <i class="fas fa-sun"></i>
-        </button>
-        <div class="visualizer-container">
-            <canvas id="visualizerCanvas"></canvas>
-            <div id="sintonia-text">SINTONIA <span>102.5 FM</span></div>
-        </div>
-
-        <div id="rds-info">Información de la estación...</div>
-
-        <div id="info-ticker">Cargando mensajes...</div>
-        <div class="controls">
-            <button class="control-button" id="playPauseButton" aria-label="Reproducir/Pausar">
-                <i class="fas fa-play"></i>
+    <main> <div class="container">
+            <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema oscuro/claro">
+                <i class="fas fa-sun"></i>
             </button>
-             <button class="control-button" id="toggleKickButton" aria-label="Mostrar/Ocultar transmisión en vivo">
-                <i class="fas fa-video"></i>
-            </button>
-            <button class="control-button" id="newsLinkButton" aria-label="Ir a la web de noticias">
-                <i class="fas fa-newspaper"></i>
-            </button>
-             <button class="sleep-timer-toggle-button" id="toggleSleepTimerButton" aria-label="Mostrar/Ocultar temporizador de apagado">
-                <i class="fas fa-clock"></i>
-            </button>
-             <button class="weekly-scheduler-toggle-button" id="toggleWeeklySchedulerButton" aria-label="Mostrar/Ocultar programador semanal">
-                 <i class="fas fa-calendar-days"></i>
-             </button>
-             <button class="control-button" id="shareButton" aria-label="Compartir aplicación">
-                 <i class="fas fa-share-alt"></i>
-             </button>
-        </div>
-
-        <div class="volume-control">
-            <i class="fas fa-volume-down" id="volumeIcon"></i>
-            <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" aria-label="Control de volumen">
+            <div class="visualizer-container">
+                <canvas id="visualizerCanvas"></canvas>
+                <div id="sintonia-text">SINTONIA <span>102.5 FM</span></div>
             </div>
 
-        <div class="station-select">
-            <label for="stations">Estación:</label>
-            <select id="stations" aria-label="Seleccionar estación de radio">
-                <option value="https://stream.radioservice.org/8046/stream">Radio Sintonia 102.5 - Opción 1</option>
-                <option value="https://stream.zeno.fm/40x1zezb7nhvv">Radio Sintonia 102.5 - Opción 2</option>
-                </select>
-        </div>
+            <div id="rds-info">Información de la estación...</div>
 
-        <div id="sleepTimerControls">
-            <label for="sleepTimerMinutes">Apagado en (minutos):</label>
-            <input type="number" id="sleepTimerMinutes" min="1" value="30" aria-label="Configurar temporizador de apagado">
-            <button id="setSleepTimerButton" aria-label="Configurar temporizador"><i class="fas fa-clock"></i></button>
-            <button id="cancelSleepTimerButton" style="display: none;" aria-label="Cancelar temporizador"><i class="fas fa-times"></i></button>
-        </div>
-
-         <div id="weeklySchedulerControls">
-            <h3>Programar Encendido</h3>
-            <div class="day-select">
-                <label><input type="checkbox" name="schedule-day" value="1"> Lunes</label>
-                <label><input type="checkbox" name="schedule-day" value="2"> Martes</label>
-                <label><input type="checkbox" name="schedule-day" value="3"> Miércoles</label>
-                <label><input type="checkbox" name="schedule-day" value="4"> Jueves</label>
-                <label><input type="checkbox" name="schedule-day" value="5"> Viernes</label>
-                <label><input type="checkbox" name="schedule-day" value="6"> Sábado</label>
-                <label><input type="checkbox" name="schedule-day" value="0"> Domingo</label>
+            <div id="info-ticker">Cargando mensajes...</div>
+            <div class="controls">
+                <button class="control-button" id="playPauseButton" aria-label="Reproducir/Pausar">
+                    <i class="fas fa-play"></i>
+                </button>
+                 <button class="control-button" id="toggleKickButton" aria-label="Mostrar/Ocultar transmisión en vivo">
+                    <i class="fas fa-video"></i>
+                </button>
+                <button class="control-button" id="newsLinkButton" aria-label="Ir a la web de noticias">
+                    <i class="fas fa-newspaper"></i>
+                </button>
+                 <button class="sleep-timer-toggle-button" id="toggleSleepTimerButton" aria-label="Mostrar/Ocultar temporizador de apagado">
+                    <i class="fas fa-clock"></i>
+                </button>
+                 <button class="weekly-scheduler-toggle-button" id="toggleWeeklySchedulerButton" aria-label="Mostrar/Ocultar programador semanal">
+                     <i class="fas fa-calendar-days"></i>
+                 </button>
+                 <button class="control-button" id="shareButton" aria-label="Compartir aplicación">
+                     <i class="fas fa-share-alt"></i>
+                 </button>
             </div>
-            <div class="time-select">
-                <label for="scheduleTime">Hora:</label>
-                <input type="time" id="scheduleTime" value="07:00">
+
+            <div class="volume-control">
+                <i class="fas fa-volume-down" id="volumeIcon"></i>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" aria-label="Control de volumen">
+                </div>
+
+            <div class="station-select">
+                <label for="stations">Estación:</label>
+                <select id="stations" aria-label="Seleccionar estación de radio">
+                    <option value="https://stream.radioservice.org/8046/stream">Radio Sintonia 102.5 - Opción 1</option>
+                    <option value="https://stream.zeno.fm/40x1zezb7nhvv">Radio Sintonia 102.5 - Opción 2</option>
+                    </select>
             </div>
-            <button id="saveScheduleButton"> <i class="fas fa-save"></i> Guardar Programación</button>
-            <button id="clearScheduleButton"> <i class="fas fa-times"></i> Limpiar Programación</button>
-             <p style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7); margin-top: 10px;">Nota: La programación solo funciona si la página está abierta en el navegador.</p>
+
+            <div id="sleepTimerControls">
+                <label for="sleepTimerMinutes">Apagado en (minutos):</label>
+                <input type="number" id="sleepTimerMinutes" min="1" value="30" aria-label="Configurar temporizador de apagado">
+                <button id="setSleepTimerButton" aria-label="Configurar temporizador"><i class="fas fa-clock"></i></button>
+                <button id="cancelSleepTimerButton" style="display: none;" aria-label="Cancelar temporizador"><i class="fas fa-times"></i></button>
+            </div>
+
+             <div id="weeklySchedulerControls">
+                <h3>Programar Encendido</h3>
+                <div class="day-select">
+                    <label><input type="checkbox" name="schedule-day" value="1"> Lunes</label>
+                    <label><input type="checkbox" name="schedule-day" value="2"> Martes</label>
+                    <label><input type="checkbox" name="schedule-day" value="3"> Miércoles</label>
+                    <label><input type="checkbox" name="schedule-day" value="4"> Jueves</label>
+                    <label><input type="checkbox" name="schedule-day" value="5"> Viernes</label>
+                    <label><input type="checkbox" name="schedule-day" value="6"> Sábado</label>
+                    <label><input type="checkbox" name="schedule-day" value="0"> Domingo</label>
+                </div>
+                <div class="time-select">
+                    <label for="scheduleTime">Hora:</label>
+                    <input type="time" id="scheduleTime" value="07:00">
+                </div>
+                <button id="saveScheduleButton"> <i class="fas fa-save"></i> Guardar Programación</button>
+                <button id="clearScheduleButton"> <i class="fas fa-times"></i> Limpiar Programación</button>
+                 <p style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7); margin-top: 10px;">Nota: La programación solo funciona si la página está abierta en el navegador.</p>
+            </div>
+
+             <div class="kick-embed-container" id="kickEmbedContainer">
+                 <iframe src="https://player.kick.com/sintonia-tv" height="720" width="1280" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
+            </div>
+
+            <div class="toast-container" id="toastContainer"></div>
+
         </div>
-
-         <div class="kick-embed-container" id="kickEmbedContainer">
-             <iframe src="https://player.kick.com/sintonia-tv" height="720" width="1280" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
-        </div>
-
-        <div class="toast-container" id="toastContainer"></div>
-
-    </div>
+    </main>
 
     <p class="footer">Todos los derechos Reservados 2025 Sintonia</p>
 
