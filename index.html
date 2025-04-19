@@ -79,9 +79,14 @@
             color: var(--accent-blue);
         }
 
-        /* Explicitly set font-size for icons within the theme toggle */
+        /* Explicitly set font-size, width, height, and display for icons within the theme toggle */
         .theme-toggle i {
              font-size: 1em; /* Ensure icon takes the size of its parent button */
+             width: 1em; /* Force width */
+             height: 1em; /* Force height */
+             display: inline-flex; /* Use flex to center content */
+             align-items: center; /* Center vertically */
+             justify-content: center; /* Center horizontally */
         }
 
 
@@ -212,9 +217,14 @@
             box-shadow: 0 3px 10px var(--shadow-dark);
         }
 
-        /* Explicitly set font-size for icons within control buttons */
+        /* Explicitly set font-size, width, height, and display for icons within control buttons */
         .control-button i {
              font-size: 1em; /* Ensure icon takes the size of its parent button */
+             width: 1em; /* Force width */
+             height: 1em; /* Force height */
+             display: inline-flex; /* Use flex to center content */
+             align-items: center; /* Center vertically */
+             justify-content: center; /* Center horizontally */
         }
 
 
@@ -358,9 +368,14 @@
             box-shadow: 0 2px 8px var(--shadow-dark);
          }
 
-         /* Explicitly set font-size for icons within sleep timer toggle button */
+         /* Explicitly set font-size, width, height, and display for icons within sleep timer toggle button */
          .sleep-timer-toggle-button i {
              font-size: 1em; /* Ensure icon takes the size of its parent button */
+             width: 1em; /* Force width */
+             height: 1em; /* Force height */
+             display: inline-flex; /* Use flex to center content */
+             align-items: center; /* Center vertically */
+             justify-content: center; /* Center horizontally */
          }
 
 
@@ -406,9 +421,14 @@
             box-shadow: 0 2px 8px var(--shadow-dark);
          }
 
-         /* Explicitly set font-size for icons within sleep timer control buttons */
+         /* Explicitly set font-size, width, height, and display for icons within sleep timer control buttons */
          #sleepTimerControls button i {
              font-size: 1em; /* Ensure icon takes the size of its parent button */
+             width: 1em; /* Force width */
+             height: 1em; /* Force height */
+             display: inline-flex; /* Use flex to center content */
+             align-items: center; /* Center vertically */
+             justify-content: center; /* Center horizontally */
          }
 
 
@@ -473,9 +493,14 @@
              background-color: var(--hover-blue);
          }
 
-         /* Explicitly set font-size for icons within weekly scheduler buttons */
+         /* Explicitly set font-size, width, height, and display for icons within weekly scheduler buttons */
          #weeklySchedulerControls button i {
              font-size: 1em; /* Ensure icon takes the size of its parent button */
+             width: 1em; /* Force width */
+             height: 1em; /* Force height */
+             display: inline-flex; /* Use flex to center content */
+             align-items: center; /* Center vertically */
+             justify-content: center; /* Center horizontally */
              margin-right: 5px; /* Add a little space between icon and text */
          }
 
@@ -700,8 +725,7 @@
         <div class="volume-control">
             <i class="fas fa-volume-down" id="volumeIcon"></i>
             <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" aria-label="Control de volumen">
-            <i class="fas fa-volume-up"></i>
-        </div>
+            </div>
 
         <div class="station-select">
             <label for="stations">Estación:</label>
@@ -977,13 +1001,14 @@
 
             function updateVolumeIcon(volume) {
                 if (volumeIcon) {
-                    volumeIcon.classList.remove('fa-volume-mute', 'fa-volume-down', 'fa-volume-up');
+                    // Need to remove both fas and specific icon class
+                    volumeIcon.classList.remove('fas', 'fa-volume-mute', 'fa-volume-down', 'fa-volume-up');
                     if (volume == 0) {
-                        volumeIcon.classList.add('fa-volume-mute');
+                        volumeIcon.classList.add('fas', 'fa-volume-mute');
                     } else if (volume < 0.5) {
-                        volumeIcon.classList.add('fa-volume-down');
+                        volumeIcon.classList.add('fas', 'fa-volume-down');
                     } else {
-                        volumeIcon.classList.add('fa-volume-up');
+                        volumeIcon.classList.add('fas', 'fa-volume-up');
                     }
                 }
             }
@@ -1420,7 +1445,7 @@
                     const iconElement = themeToggle.querySelector('i');
 
                     if (iconElement) {
-                         iconElement.classList.remove('fa-sun', 'fa-moon');
+                         iconElement.classList.remove('fa-sun', 'fa-moon', 'fas', 'far', 'fad'); // Clean up existing classes
                          if (isLightTheme) {
                              iconElement.classList.add('fas', 'fa-moon'); // Light theme shows moon (to switch to dark)
                              showToast('Tema claro activado.');
@@ -1442,7 +1467,7 @@
                 const savedTheme = localStorage.getItem('sintonia_theme');
                 const iconElement = themeToggle.querySelector('i');
                 if (iconElement) {
-                    iconElement.classList.remove('fa-sun', 'fa-moon', 'fas', 'far'); // Clean up existing classes
+                    iconElement.classList.remove('fa-sun', 'fa-moon', 'fas', 'far', 'fad'); // Clean up existing classes
                     if (savedTheme === 'light') {
                          document.body.classList.add('light-theme');
                          iconElement.classList.add('fas', 'fa-moon'); // Light theme shows moon
